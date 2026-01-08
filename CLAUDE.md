@@ -349,7 +349,10 @@ provider/model-identifier
 **Setup:**
 ```bash
 # Install dev tools
-uv add --dev black ruff mypy pytest pytest-asyncio pytest-cov
+uv add --dev black ruff mypy pytest pytest-asyncio pytest-cov pre-commit
+
+# Install pre-commit hooks
+pre-commit install
 
 # Create pyproject.toml configuration
 [tool.black]

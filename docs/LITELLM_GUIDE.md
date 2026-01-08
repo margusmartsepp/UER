@@ -23,8 +23,6 @@ LiteLLM is the unified gateway layer for our Universal Expert Registry. It provi
 ### Installation
 
 ```bash
-pip install litellm
-# or
 uv add litellm
 ```
 
