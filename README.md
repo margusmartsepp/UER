@@ -190,7 +190,7 @@ You need at least one LLM API key to use UER. We recommend starting with **Googl
 1. Visit [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 2. Click "Create API Key"
 3. Copy your key (starts with `AIza...`)
-4. Free tier includes: 15 requests/minute, 1 million tokens/minute
+4. Free tier includes: 10-15 requests/minute, 250K tokens/minute, 250-1000 requests/day (varies by model)
 
 #### Other Providers (Optional)
 
@@ -328,7 +328,7 @@ User: "Store this document in the registry and have Gemini summarize it"
 1. Ensure you have an API key configured for that provider
 2. Check the model name is correct (use LiteLLM format: `provider/model`)
 3. Verify the model is available in your region/tier
-```
+
 
 ## Tools Reference
 
@@ -409,12 +409,42 @@ dependencies = [
 ]
 ```
 
+## Hackathon Context
+
+This project was built for the **[AI Manipulation Hackathon](https://apartresearch.com/sprints/ai-manipulation-hackathon-2026-01-09-to-2026-01-11)** organized by [Apart Research](https://apartresearch.com/).
+
+### Event Details
+
+- **Dates:** January 9-11, 2026
+- **Theme:** Measuring, detecting, and defending against AI manipulation
+- **Participants:** 500+ builders worldwide
+- **Prizes:** $2,000 in cash prizes
+- **Workshop:** Winners present at IASEAI workshop in Paris (February 26, 2026)
+
+### The Challenge
+
+AI systems are mastering deception, sycophancy, sandbagging, and psychological exploitation at scale, while our ability to detect, measure, and counter these behaviors remains dangerously underdeveloped. This hackathon brings together builders to prototype practical systems that address this critical AI safety challenge.
+
+### How UER Addresses AI Manipulation
+
+The Universal Expert Registry provides infrastructure for:
+
+1. **Multi-Model Testing** - Compare responses across providers to detect inconsistencies and manipulation patterns
+2. **Persistent Context** - Track conversation history across sessions to identify behavioral shifts
+3. **Tool Integration** - Connect manipulation detection tools via MCP protocol
+4. **Subagent Orchestration** - Deploy specialized agents for red-teaming and safety testing
+5. **Transparent Logging** - Full visibility into LLM calls, costs, and behaviors
+
+### Team
+
+**The Risk Takers** - Building practical tools for AI safety and transparency.
+
 ## Related Projects
 
 - [LiteLLM](https://github.com/BerriAI/litellm) - Unified LLM gateway
 - [MCP Registry](https://registry.modelcontextprotocol.io) - Official MCP server directory
 - [Context7](https://github.com/upstash/context7) - Library documentation MCP
-- [Hilaryous-Auditor](https://github.com/margusmartsepp/Hilaryous-Auditor) - AI safety auditing
+- [Apart Research](https://apartresearch.com/) - AI safety research and hackathons
 
 ## License
 
