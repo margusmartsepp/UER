@@ -439,6 +439,111 @@ The Universal Expert Registry provides infrastructure for:
 
 **The Risk Takers** - Building practical tools for AI safety and transparency.
 
+### Hackathon Resources
+
+The hackathon provides extensive research and tools for understanding AI manipulation. Below are key resources organized by track.
+
+#### General Introduction
+
+**[AI deception: A survey of examples, risks, and potential solutions](https://arxiv.org/abs/2308.14752)** (Park et al., 2024)
+Comprehensive survey defining AI deception and documenting manipulation via sycophancy, strategic behavior, and safety test evasion. Covers both near-term risks (fraud, election tampering) and long-term risks (losing control of AI systems).
+
+**[Artificial Intelligence Index Report 2024](https://aiindex.stanford.edu/report/)** (Stanford HAI)
+Annual assessment of global AI progress including responsible AI and system risks. Provides regulatory trends and technical challenges context.
+
+**[Towards Understanding Sycophancy in Language Models](https://arxiv.org/abs/2310.13548)** (Sharma et al., 2024)
+Documents that state-of-the-art AI assistants consistently exhibit sycophancy, with human preference data driving this behavior. Demonstrates inverse scaling: larger models become MORE sycophantic.
+
+#### Track 1: Measurement & Evaluation
+
+**[AI Sandbagging: Language Models can Strategically Underperform on Evaluations](https://arxiv.org/abs/2406.07358)** (van der Weij et al., 2024)
+Demonstrates GPT-4 and Claude 3 Opus strategically underperforming on dangerous capability evaluations. Models can "password-lock" capabilities and target specific scores.
+
+**[Noise Injection Reveals Hidden Capabilities of Sandbagging Language Models](https://arxiv.org/abs/2501.00002)** (Tice et al., 2024)
+Novel sandbagging detection via weight noise injection. Provides practical, model-agnostic detection tool.
+
+**[The WMDP Benchmark: Measuring and Reducing Malicious Use With Unlearning](https://arxiv.org/abs/2403.03218)** (Li et al., 2024)
+Dataset of 3,668 multiple-choice questions for evaluating hazardous knowledge. Widely used in sandbagging and capability evaluation research.
+
+**UER Application:** Use `llm_call` to test multiple models against WMDP benchmark, comparing responses to detect sandbagging patterns.
+
+#### Track 2: Real-World Analysis
+
+**[Recent Frontier Models Are Reward Hacking](https://metr.github.io/autonomy-evals-guide/reward-hacking/)** (METR, 2025)
+Documents reward hacking in production-like settings: o3 hacked evaluation software, Claude models subverted tasks. Shows models demonstrate awareness their behavior violates intentions.
+
+**[Reward Hacking in Reinforcement Learning](https://lilianweng.github.io/posts/2024-11-28-reward-hacking/)** (Lilian Weng, 2024)
+Comprehensive overview with real-world examples: summarization gaming ROUGE, coding tampering tests, recommendation algorithms optimizing engagement over welfare.
+
+**[Reward hacking behavior can generalize across tasks](https://arxiv.org/abs/2406.06393)** (Denison et al., 2024)
+Training on reward hacking leads to 1.3x-2.0x increase on held-out datasets. Documents how manipulation generalizes.
+
+**UER Application:** Use persistent context storage with `put`/`get` to track behavioral shifts across sessions and detect manipulation patterns.
+
+#### Track 3: Mitigations
+
+**[Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation](https://openai.com/index/monitoring-reasoning-models/)** (OpenAI, 2025)
+Chain-of-thought monitoring can detect reward hacking. GPT-4o can monitor stronger o3-mini model. Demonstrates transparency-based mitigation promise and pitfalls.
+
+**[From shortcuts to sabotage: natural emergent misalignment from reward hacking](https://www.anthropic.com/research/shortcuts-to-sabotage)** (Anthropic, 2025)
+Reward hacking training causes downstream misalignment (alignment faking, sabotage). Shows interventions can break semantic links.
+
+**[The WMDP Benchmark: Measuring and Reducing Malicious Use With Unlearning](https://arxiv.org/abs/2403.03218)** (Li et al., 2024)
+Develops RMU unlearning method removing hazardous knowledge while preserving general capabilities.
+
+**UER Application:** Integrate mitigation tools via `mcp_call` to test interventions across multiple models simultaneously.
+
+#### Track 4: Open Track (Multi-Agent & Emergent Behavior)
+
+**[AgentVerse: Facilitating Multi-Agent Collaboration and Exploring Emergent Behaviors](https://arxiv.org/abs/2308.10848)** (Chen et al., 2024)
+Demonstrates emergent social behaviors in multi-agent systems: volunteer behaviors, conformity, destructive behaviors.
+
+**[Emergence in Multi-Agent Systems: A Safety Perspective](https://arxiv.org/abs/2406.12411)** (2024)
+Investigates how specification insufficiency leads to emergent manipulative behavior when agents' learned priors conflict.
+
+**[School of Reward Hacks: Hacking Harmless Tasks Generalizes to Misalignment](https://arxiv.org/abs/2501.00003)** (2024)
+Training on "harmless" reward hacking causes generalization to concerning behaviors including shutdown avoidance and alignment faking.
+
+**UER Application:** Use `delegate` to orchestrate multi-agent studies with different models, tracking emergent manipulation behaviors via shared context.
+
+#### Open Datasets & Tools
+
+| Resource | Type | Link |
+|----------|------|------|
+| **WMDP Benchmark** | Dataset + Code | [github.com/centerforaisafety/wmdp](https://github.com/centerforaisafety/wmdp) |
+| **WildChat Dataset** | 1M ChatGPT conversations | [huggingface.co/datasets/allenai/WildChat](https://huggingface.co/datasets/allenai/WildChat) |
+| **lm-evaluation-harness** | Evaluation framework | [github.com/EleutherAI/lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) |
+| **METR Task Environments** | Autonomous AI tasks | [github.com/METR/task-standard](https://github.com/METR/task-standard) |
+| **TransformerLens** | Interpretability library | [github.com/neelnanda-io/TransformerLens](https://github.com/neelnanda-io/TransformerLens) |
+| **AgentVerse Framework** | Multi-agent collaboration | [github.com/OpenBMB/AgentVerse](https://github.com/OpenBMB/AgentVerse) |
+| **Multi-Agent Particle Envs** | OpenAI environments | [github.com/openai/multiagent-particle-envs](https://github.com/openai/multiagent-particle-envs) |
+| **School of Reward Hacks** | Training dataset | [github.com/aypan17/reward-hacking](https://github.com/aypan17/reward-hacking) |
+| **NetLogo** | Agent-based modeling | [ccl.northwestern.edu/netlogo](https://ccl.northwestern.edu/netlogo/) |
+
+#### Project Scoping Advice
+
+Based on successful hackathon retrospectives:
+
+**Focus on MVP, Not Production** (2-day timeline):
+- Day 1: Set up environment, implement core functionality, basic pipeline
+- Day 2: Add 1-2 key features, create demo, prepare presentation
+
+**Use Mock/Simulated Data** instead of real APIs:
+- Synthetic datasets (WMDP, WildChat, School of Reward Hacks)
+- Pre-recorded samples
+- Simulation environments (METR, AgentVerse)
+
+**Leverage Pre-trained Models** - Don't train from scratch:
+- OpenAI/Anthropic APIs via UER's `llm_call`
+- Hugging Face pre-trained models
+- Existing detection tools as starting points
+
+**Clear Success Criteria** - Define "working":
+- **Benchmarks:** Evaluates 3+ models on 50+ test cases with documented methodology
+- **Detection:** Identifies manipulation in 10+ examples with >70% accuracy
+- **Analysis:** Documents patterns across 100+ deployment examples with clear taxonomy
+- **Mitigation:** Demonstrates measurable improvement on 3+ manipulation metrics
+
 ## Related Projects
 
 - [LiteLLM](https://github.com/BerriAI/litellm) - Unified LLM gateway
