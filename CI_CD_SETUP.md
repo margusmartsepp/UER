@@ -4,7 +4,9 @@ This guide explains how to set up automated npm publishing using GitHub Actions 
 
 ## Overview
 
-**Trusted Publishing** uses OpenID Connect (OIDC) to establish a secure trust relationship between your GitHub repository and npm, eliminating the need to store long-lived npm tokens as GitHub secrets.
+This guide covers CI/CD setup for the UER npm package. After testing, we found that **manual publishing with 2FA** is the most reliable approach for this package.
+
+**Note**: npm's OIDC Trusted Publishing has limitations and doesn't work reliably for all package publishing scenarios. Manual publishing with 2FA provides better security and reliability.
 
 ## Prerequisites
 
