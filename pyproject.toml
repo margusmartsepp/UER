@@ -17,6 +17,7 @@ dependencies = [
     "litellm>=1.40.0",
     "datasets>=2.18.0",
     "huggingface-hub>=0.20.0",
+    "mcp>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -65,6 +66,8 @@ ignore = []
 "tests/**/*.py" = ["S101"]  # Allow assert statements in tests
 "context/scripts/*.py" = ["E501"]  # Allow long lines in test scripts
 "seed_datasets.py" = ["E501"]  # Allow long lines in setup script
+"src/uer/models/*.py" = ["E501", "N805"]  # Allow long lines in descriptions, Pydantic validators use cls
+"src/uer/server.py" = ["E501"]  # Allow long lines in tool descriptions
 
 [tool.mypy]
 python_version = "3.11"
@@ -83,6 +86,8 @@ module = [
     "datasets.*",
     "huggingface_hub.*",
     "litellm.*",
+    "mcp.*",
+    "pydantic.*",
 ]
 ignore_missing_imports = true
 

@@ -9,7 +9,9 @@
       "WebFetch(domain:apartresearch.com)",
       "WebFetch(domain:arxiv.org)",
       "Bash(curl:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: create comprehensive hackathon submission document\n\n- Add properly formatted authors list \\(5 team members\\)\n- Include UER abstract with key capabilities and hackathon context\n- Write complete Introduction section \\(challenge, limitations, solution, research questions\\)\n- Document Methods: architecture, tools, testing methodology with code examples\n- Present Results: multi-model comparison, sycophancy/sandbagging detection, token efficiency\n- Provide Discussion: key findings, limitations, future work, threat model\n- Add References section organized by hackathon tracks\n- Include Security Considerations appendix with risks and mitigations\n- Add team contributions and reproducibility information\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\ndocs: create comprehensive hackathon submission document\n\n- Add properly formatted authors list \\(5 team members\\)\n- Include UER abstract with key capabilities and hackathon context\n- Write complete Introduction section \\(challenge, limitations, solution, research questions\\)\n- Document Methods: architecture, tools, testing methodology with code examples\n- Present Results: multi-model comparison, sycophancy/sandbagging detection, token efficiency\n- Provide Discussion: key findings, limitations, future work, threat model\n- Add References section organized by hackathon tracks\n- Include Security Considerations appendix with risks and mitigations\n- Add team contributions and reproducibility information\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(uv run ruff:*)"
     ]
   }
 }
