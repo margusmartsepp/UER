@@ -47,6 +47,17 @@ class LLMCallRequest(BaseModel):
         ),
     )
 
+    # Tool Use Support
+    tools: list[dict[str, Any]] | None = Field(
+        default=None,
+        description=(
+            "List of tools the model can use in OpenAI format. "
+            "For Claude models, use built-in tools like 'web_search_20250305' for web search. "
+            "For Gemini, tools include code_execution, google_search_retrieval, etc. "
+            "Example: [{'type': 'web_search_20250305'}] for Claude web search."
+        ),
+    )
+
     @validator("model")
     def validate_model_format(cls, v: str) -> str:
         """Ensure model is in 'provider/model' format."""

@@ -36,7 +36,8 @@ async def list_tools() -> list[Tool]:
                 "Call any LLM via LiteLLM unified interface. "
                 f"Available providers: {', '.join(available) or 'none'}. "
                 "Supports Anthropic (Claude), OpenAI (GPT), Google (Gemini), and 100+ more. "
-                "Features: Structured output (response_format), Chain of Thought (thinking_level/thinking_budget)."
+                "Features: Structured output (response_format), Chain of Thought (thinking_level/thinking_budget), "
+                "Tool use (tools) for web search, code execution, grounding, etc."
             ),
             inputSchema={
                 "type": "object",
@@ -90,6 +91,16 @@ async def list_tools() -> list[Tool]:
                         "maximum": 32768,
                         "description": "Gemini 2.5 thinking tokens (128-32768, or -1 for dynamic allocation)",
                     },
+                    "tools": {
+                        "type": "array",
+                        "description": (
+                            "List of tools the model can use. "
+                            "Claude: [{'type': 'web_search_20250305'}] for web search, [{'type': 'bash_20250305'}] for code execution. "
+                            "Gemini: [{'type': 'code_execution'}] or [{'type': 'google_search_retrieval'}]. "
+                            "OpenAI: Standard function calling format."
+                        ),
+                        "items": {"type": "object"},
+                    },
                 },
                 "required": ["model", "messages"],
             },
@@ -110,7 +121,8 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         logger.info(
             f"Calling LLM: model={request.model}, messages={len(request.messages)}, "
             f"structured_output={request.response_format is not None}, "
-            f"thinking={request.thinking_level or request.thinking_budget}"
+            f"thinking={request.thinking_level or request.thinking_budget}, "
+            f"tools={len(request.tools) if request.tools else 0}"
         )
 
         # Call LLM via gateway with all parameters
@@ -122,6 +134,7 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
             response_format=request.response_format,
             thinking_level=request.thinking_level,
             thinking_budget=request.thinking_budget,
+            tools=request.tools,
         )
 
         # Log result
