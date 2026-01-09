@@ -12,7 +12,28 @@ This guide explains how to set up automated npm publishing using GitHub Actions 
 - npm account with 2FA enabled
 - Package name: `uer-mcp`
 
-## Step 1: Configure npm Trusted Publisher
+## Step 1: Choose Authentication Method
+
+You have two options for authentication:
+
+### Option A: npm Token (Simpler, Currently Configured)
+
+1. **Create npm Access Token**:
+   - Go to: https://www.npmjs.com/settings/[your-username]/tokens
+   - Click "Generate New Token" → "Classic Token"
+   - Select "Automation" type
+   - Copy the token (starts with `npm_...`)
+
+2. **Add to GitHub Secrets**:
+   - Go to: https://github.com/margusmartsepp/UER/settings/secrets/actions
+   - Click "New repository secret"
+   - Name: `NPM_TOKEN`
+   - Value: Paste your npm token
+   - Click "Add secret"
+
+3. **Done!** The workflow is already configured to use this token.
+
+### Option B: OIDC Trusted Publisher (More Secure, No Tokens)
 
 1. **Go to npm package settings**:
    - Visit: https://www.npmjs.com/package/uer-mcp/access
@@ -25,12 +46,17 @@ This guide explains how to set up automated npm publishing using GitHub Actions 
      - **Organization or user**: `margusmartsepp`
      - **Repository**: `UER`
      - **Workflow filename**: `publish.yml`
-     - **Environment name**: (leave empty or use `production`)
+     - **Environment name**: (leave empty)
    - Click "Set up connection"
 
-3. **Verify**:
-   - You should see the trusted publisher listed
-   - Status should show as "Active"
+3. **Update workflow**:
+   - Remove the `env:` section from the "Publish to npm" step
+   - The workflow will use OIDC automatically
+
+4. **Remove GitHub secret**:
+   - Delete the `NPM_TOKEN` secret from GitHub (no longer needed)
+
+**Recommendation**: Start with Option A (npm token) to get publishing working quickly. You can migrate to Option B (OIDC) later for better security.
 
 ## Step 2: GitHub Actions Workflow
 
