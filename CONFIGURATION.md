@@ -1,0 +1,286 @@
+# Configuration Guide
+
+This guide covers how to configure the UER MCP server for different clients and how to obtain API keys for various LLM providers.
+
+## Table of Contents
+
+- [API Keys (Required)](#api-keys-required)
+- [Client-Specific Configuration](#client-specific-configuration)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
+
+## API Keys (Required)
+
+**⚠️ Important**: You must provide at least one LLM API key. The keys you provide determine which models you can access through UER.
+
+### Quick Links to Get API Keys
+
+| Provider | Get Your API Key | Environment Variable | Free Tier |
+|----------|------------------|---------------------|-----------|
+| **Google Gemini** ⭐ | [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys) | `GEMINI_API_KEY` | ✅ Free tier available |
+| **Anthropic (Claude)** | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) | `ANTHROPIC_API_KEY` | $5 credit for new users |
+| **OpenAI (GPT)** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` | $5 credit for new users |
+| **Azure OpenAI** | [portal.azure.com](https://portal.azure.com/) | `AZURE_API_KEY`, `AZURE_API_BASE` | Requires subscription |
+| **AWS Bedrock** | [console.aws.amazon.com/bedrock](https://console.aws.amazon.com/bedrock/) | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` | Pay-as-you-go |
+
+⭐ **Recommended for testing**: Start with Google Gemini - it's free and easy to set up!
+
+### How to Get a Gemini API Key (Free)
+
+1. Visit [https://aistudio.google.com/api-keys](https://aistudio.google.com/api-keys)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy your key (starts with `AIza...`)
+5. Add it to your MCP configuration (see below)
+
+**Free tier includes**:
+- 10-15 requests/minute
+- 250K tokens/minute
+- 250-1000 requests/day (varies by model)
+
+## Client-Specific Configuration
+
+### Claude Desktop
+
+**Location:**
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Minimal Configuration (Gemini only):**
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_actual_key_here"
+      }
+    }
+  }
+}
+```
+
+**Full Configuration (Multiple Providers):**
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_actual_key_here",
+        "ANTHROPIC_API_KEY": "sk-ant-your_actual_key_here",
+        "OPENAI_API_KEY": "sk-your_actual_key_here",
+        "AWS_ACCESS_KEY_ID": "your_aws_key",
+        "AWS_SECRET_ACCESS_KEY": "your_aws_secret",
+        "AWS_REGION_NAME": "us-east-1",
+        "AZURE_API_KEY": "your_azure_key",
+        "AZURE_API_BASE": "https://your-resource.openai.azure.com/"
+      }
+    }
+  }
+}
+```
+
+**After configuration:**
+1. Quit Claude Desktop completely
+2. Reopen Claude Desktop
+3. Look for the 🔨 (hammer) icon indicating MCP tools are loaded
+
+### VS Code / VS Code Insiders
+
+**Using the Install Button:**
+
+Click the install button in the [README](README.md) or use the VS Code CLI:
+
+```bash
+# For VS Code
+code --add-mcp '{"name":"uer","command":"npx","args":["uer-mcp@latest"]}'
+
+# For VS Code Insiders
+code-insiders --add-mcp '{"name":"uer","command":"npx","args":["uer-mcp@latest"]}'
+```
+
+**Manual Configuration:**
+
+Follow the [VS Code MCP guide](https://code.visualstudio.com/docs/copilot/chat/mcp-servers#_add-an-mcp-server).
+
+Add API keys through VS Code settings or your MCP configuration file.
+
+### Cursor
+
+**Using the Install Button:**
+
+Click the Cursor install button in the [README](README.md).
+
+**Manual Configuration:**
+
+1. Go to `Cursor Settings` → `MCP` → `Add new MCP Server`
+2. Name: `uer`
+3. Type: `command`
+4. Command: `npx uer-mcp@latest`
+5. Add environment variables for your API keys
+
+### Windsurf
+
+Follow the [Windsurf MCP documentation](https://docs.windsurf.com/windsurf/cascade/mcp).
+
+Add the standard configuration with your API keys to your Windsurf MCP settings.
+
+### Other MCP Clients
+
+For other MCP clients (Goose, Codex, Amp, etc.), add this configuration to your MCP settings file:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "your-key-here"
+      }
+    }
+  }
+}
+```
+
+## Environment Variables
+
+### Required (At Least One)
+
+You must provide at least one of these:
+
+- `GEMINI_API_KEY` - Google Gemini models
+- `ANTHROPIC_API_KEY` - Claude models
+- `OPENAI_API_KEY` - GPT models
+
+### Optional (For Additional Providers)
+
+**Azure OpenAI:**
+- `AZURE_API_KEY` - Your Azure OpenAI API key
+- `AZURE_API_BASE` - Your Azure OpenAI endpoint URL
+
+**AWS Bedrock:**
+- `AWS_ACCESS_KEY_ID` - AWS access key
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key
+- `AWS_REGION_NAME` - AWS region (e.g., `us-east-1`)
+
+### Security Notes
+
+- API keys are stored locally in your MCP client configuration
+- Keys are never sent to any server except the LLM provider APIs
+- The UER server runs locally on your machine
+- Each user brings their own keys (BYOK model)
+
+## Troubleshooting
+
+### "No providers available" error
+
+**Cause**: No valid API keys were provided or detected.
+
+**Solution**:
+1. Check that you've added at least one API key to the `env` section
+2. Verify your API key is correct (check for typos)
+3. Ensure the key format is correct:
+   - Gemini: starts with `AIza`
+   - Anthropic: starts with `sk-ant-`
+   - OpenAI: starts with `sk-`
+
+### "Provider 'X' not available" error
+
+**Cause**: You're trying to use a provider for which you haven't provided an API key.
+
+**Solution**:
+1. Add the required API key to your configuration
+2. Restart your MCP client
+3. Try again
+
+### API key not working
+
+**Checklist**:
+- [ ] Key is copied correctly (no extra spaces)
+- [ ] Key is active and not expired
+- [ ] Key has the correct permissions
+- [ ] For Gemini: API is enabled in Google Cloud Console
+- [ ] For Claude/GPT: Account has credits or payment method
+
+### Server not starting
+
+**Check**:
+1. Node.js 14+ is installed: `node --version`
+2. Python 3.11+ is installed: `python --version`
+3. MCP client configuration file is valid JSON
+4. Restart your MCP client after configuration changes
+
+### Need Help?
+
+- Check the [main README](README.md) for general information
+- Review the [PUBLISHING.md](PUBLISHING.md) for development setup
+- Open an issue on [GitHub](https://github.com/margusmartsepp/UER/issues)
+
+## Example Configurations
+
+### Minimal Setup (Gemini Only)
+
+Perfect for testing and free tier usage:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_key_here"
+      }
+    }
+  }
+}
+```
+
+### Development Setup (Multiple Providers)
+
+For developers who want access to all models:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_key_here",
+        "ANTHROPIC_API_KEY": "sk-ant-your_key_here",
+        "OPENAI_API_KEY": "sk-your_key_here"
+      }
+    }
+  }
+}
+```
+
+### Enterprise Setup (All Providers)
+
+For organizations using multiple cloud providers:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_key_here",
+        "ANTHROPIC_API_KEY": "sk-ant-your_key_here",
+        "OPENAI_API_KEY": "sk-your_key_here",
+        "AWS_ACCESS_KEY_ID": "your_aws_key",
+        "AWS_SECRET_ACCESS_KEY": "your_aws_secret",
+        "AWS_REGION_NAME": "us-east-1",
+        "AZURE_API_KEY": "your_azure_key",
+        "AZURE_API_BASE": "https://your-resource.openai.azure.com/"
+      }
+    }
+  }
+}
+```

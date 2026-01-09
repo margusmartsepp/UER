@@ -1,6 +1,26 @@
 # Universal Expert Registry
 
+[![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **ASI-Level Experts, Infinite Memory, Any Client**
+
+**Standard config** works in most MCP clients:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"]
+    }
+  }
+}
+```
+
+[<img src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20Server&color=0098FF" alt="Install in VS Code">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D) [<img alt="Install in VS Code Insiders" src="https://img.shields.io/badge/VS_Code_Insiders-VS_Code_Insiders?style=flat-square&label=Install%20Server&color=24bfa5">](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D)
+
+---
 
 An MCP server that provides:
 1. **Universal LLM Access** - Call any LLM (Claude, GPT, Gemini, Bedrock, Azure, local models) through LiteLLM
@@ -172,129 +192,99 @@ Message 2: Continue → Progress: 60% → {{continuation: registry://plan/001}}
 Message 3: Continue → Complete! Here's your report...
 ```
 
-## Quick Start
+## Getting Started
 
-### Prerequisites
+### Requirements
 
-- **Node.js 14+** (for npm/npx)
-- **Python 3.11+** (automatically detected)
-- **Claude Desktop** (or any MCP-compatible client)
-- **At least one LLM API key** (see below)
+- **Node.js 14+** or newer
+- **Python 3.11+** (automatically detected by the server)
+- **VS Code, Cursor, Windsurf, Claude Desktop, or any other MCP client**
+- **At least one LLM API key** (Gemini, Claude, GPT, etc.)
 
-**Optional but recommended:**
-- **uv** package manager ([installation guide](https://docs.astral.sh/uv/getting-started/installation/)) - for better dependency management
+### Installation
 
-### Step 1: Get API Keys
+First, install the UER MCP server with your client.
 
-You need at least one LLM API key to use UER. We recommend starting with **Google Gemini** as it offers a free tier:
+**Standard config** works in most MCP clients:
 
-#### Google Gemini (Free - Recommended for Testing)
-
-1. Visit [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-2. Click "Create API Key"
-3. Copy your key (starts with `AIza...`)
-4. Free tier includes: 10-15 requests/minute, 250K tokens/minute, 250-1000 requests/day (varies by model)
-
-#### Other Providers (Optional)
-
-| Provider | Get API Key | Free Tier |
-|----------|-------------|-----------|
-| **Anthropic** (Claude) | [console.anthropic.com](https://console.anthropic.com/) | $5 credit for new users |
-| **OpenAI** (GPT) | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | $5 credit for new users |
-| **Azure OpenAI** | [Azure Portal](https://portal.azure.com/) | Requires Azure subscription |
-| **AWS Bedrock** | [AWS Console](https://console.aws.amazon.com/bedrock/) | Pay-as-you-go |
-
-### Step 2: Installation
-
-**Option A: Using npx (Recommended - Zero Installation)**
-
-No installation needed! Just configure Claude Desktop (Step 3) and it will automatically download and run the latest version.
-
-**Option B: Manual Installation (For Development)**
-
-```bash
-# Clone the repository
-git clone https://github.com/margusmartsepp/UER.git
-cd UER
-
-# Install dependencies
-uv sync
-
-# Build the npm package
-npm run build
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"]
+    }
+  }
+}
 ```
 
-### Step 3: Configure Claude Desktop
+> **Note**: You need to add API keys to the `env` section. See [CONFIGURATION.md](CONFIGURATION.md) for setup instructions and API key links.
 
-Add UER as an MCP server to Claude Desktop:
+[<img src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20Server&color=0098FF" alt="Install in VS Code">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D) [<img alt="Install in VS Code Insiders" src="https://img.shields.io/badge/VS_Code_Insiders-VS_Code_Insiders?style=flat-square&label=Install%20Server&color=24bfa5">](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D)
+
+<details>
+<summary><b>Claude Desktop</b></summary>
+
+Follow the MCP install [guide](https://modelcontextprotocol.io/quickstart/user), use the standard config above.
 
 **Location:** `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac)
 
-**Minimal Configuration (Gemini only - Using npx):**
-```json
-{
-  "mcpServers": {
-    "uer": {
-      "command": "npx",
-      "args": ["uer-mcp@latest"],
-      "env": {
-        "GEMINI_API_KEY": "AIza_your_key_here"
-      }
-    }
-  }
-}
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+#### Click the button to install:
+
+[<img src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Install in Cursor">](https://cursor.com/en/install-mcp?name=UER&config=eyJjb21tYW5kIjoibnB4IHVlci1tY3BAbGF0ZXN0In0%3D)
+
+#### Or install manually:
+
+Go to `Cursor Settings` -> `MCP` -> `Add new MCP Server`. Name it "uer", use `command` type with the command `npx uer-mcp@latest`.
+
+</details>
+
+<details>
+<summary><b>VS Code</b></summary>
+
+#### Click the button to install:
+
+[<img src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20Server&color=0098FF" alt="Install in VS Code">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D) [<img alt="Install in VS Code Insiders" src="https://img.shields.io/badge/VS_Code_Insiders-VS_Code_Insiders?style=flat-square&label=Install%20Server&color=24bfa5">](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D)
+
+#### Or install manually:
+
+Follow the MCP install [guide](https://code.visualstudio.com/docs/copilot/chat/mcp-servers#_add-an-mcp-server), use the standard config above. You can also install using the VS Code CLI:
+
+```bash
+# For VS Code
+code --add-mcp '{"name":"uer","command":"npx","args":["uer-mcp@latest"]}'
 ```
 
-**Full Configuration (All providers - Using npx):**
-```json
-{
-  "mcpServers": {
-    "uer": {
-      "command": "npx",
-      "args": ["uer-mcp@latest"],
-      "env": {
-        "GEMINI_API_KEY": "AIza_your_key_here",
-        "ANTHROPIC_API_KEY": "sk-ant-...",
-        "OPENAI_API_KEY": "sk-...",
-        "AWS_ACCESS_KEY_ID": "...",
-        "AWS_SECRET_ACCESS_KEY": "...",
-        "AWS_REGION_NAME": "us-east-1",
-        "AZURE_API_KEY": "...",
-        "AZURE_API_BASE": "https://....openai.azure.com/"
-      }
-    }
-  }
-}
-```
+</details>
 
-**Manual Installation Configuration (For Development):**
-```json
-{
-  "mcpServers": {
-    "uer": {
-      "command": "uv",
-      "args": ["--directory", "C:\\path\\to\\UER", "run", "python", "-m", "uer.server"],
-      "env": {
-        "GEMINI_API_KEY": "AIza_your_key_here"
-      }
-    }
-  }
-}
-```
+<details>
+<summary><b>Windsurf</b></summary>
 
-**Important:**
-- For npx: No path needed, just add your API keys
-- For manual install: Replace `C:\\path\\to\\UER` with your actual directory
-- Use double backslashes `\\` on Windows, or forward slashes `/` on Mac/Linux
-- Only include API keys for providers you want to use
+Follow Windsurf MCP [documentation](https://docs.windsurf.com/windsurf/cascade/mcp). Use the standard config above.
 
-### Step 4: Restart Claude Desktop
+</details>
 
-1. Quit Claude Desktop completely
-2. Reopen Claude Desktop
-3. Look for the 🔨 (hammer) icon indicating MCP tools are loaded
+<details>
+<summary><b>Other MCP Clients</b></summary>
 
-### Step 5: Test Your Setup
+For other MCP clients (Goose, Codex, Amp, etc.), see [CONFIGURATION.md](CONFIGURATION.md) for detailed setup instructions.
+
+</details>
+
+### Configuration & API Keys
+
+See [CONFIGURATION.md](CONFIGURATION.md) for:
+- **API key setup** (required - at least one key needed)
+- Direct links to get API keys for all providers
+- Client-specific configuration examples
+- Troubleshooting guide
+
+### Test Your Setup
 
 Try this in Claude Desktop:
 
