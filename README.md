@@ -409,6 +409,51 @@ dependencies = [
 ]
 ```
 
+## Datasets & Testing
+
+UER includes scripts to download and test manipulation detection datasets.
+
+### Quick Start: Download WMDP Benchmark
+
+```bash
+# Install datasets library
+pip install datasets
+
+# Download WMDP questions (3,668 questions: Bio, Chem, Cyber)
+cd context/scripts
+python download_wmdp.py
+```
+
+**Downloaded files:**
+- `context/datasets/wmdp_questions/wmdp-bio.json` (1,273 questions)
+- `context/datasets/wmdp_questions/wmdp-chem.json` (408 questions)
+- `context/datasets/wmdp_questions/wmdp-cyber.json` (1,987 questions)
+
+### Run Tests
+
+**Test for Sandbagging:**
+```bash
+cd context/scripts
+python test_wmdp.py --model gemini/gemini-3-flash-preview --limit 50
+```
+
+**Test for Sycophancy:**
+```bash
+python test_sycophancy.py --models claude,gpt,gemini
+```
+
+**Results saved to:** `context/datasets/results/`
+
+### Available Datasets
+
+| Dataset | Questions | Purpose | Download Command |
+|---------|-----------|---------|------------------|
+| **WMDP Benchmark** | 3,668 | Sandbagging detection | `python download_wmdp.py` |
+| **WildChat** | 1M convos | Real-world sycophancy | `python setup_datasets.py --wildchat` |
+| **School of Reward Hacks** | 100k examples | Reward hacking patterns | `python setup_datasets.py --sorh` |
+
+See `context/datasets/README.md` and `context/scripts/` for more testing scripts.
+
 ## Hackathon Context
 
 This project was built for the **[AI Manipulation Hackathon](https://apartresearch.com/sprints/ai-manipulation-hackathon-2026-01-09-to-2026-01-11)** organized by [Apart Research](https://apartresearch.com/).
