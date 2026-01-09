@@ -202,6 +202,37 @@
 
 ---
 
+## Phase 1.9: npm Package Distribution (Playwright Model) ⏱️ 1 hour
+
+**Goal:** Enable zero-installation deployment via npm/npx like Playwright MCP
+
+### Package Structure
+- [x] Create package.json for @uer/mcp npm package
+- [x] Create bin/uer-mcp.js entry point script
+- [x] Add build process to bundle Python code (scripts/build_python.py)
+- [x] Add dependency detection (uv, python)
+- [x] Create .npmignore to exclude development files
+
+### Build & Test Scripts
+- [x] Set up npm build scripts (prepare, build, prepack)
+- [x] Create test script to verify package structure
+- [x] Add automated build process for Python bundling
+
+### Documentation
+- [x] Update README with npm installation instructions
+- [x] Add npx usage examples as primary method
+- [x] Document manual installation for development
+- [x] Update Claude Desktop config examples
+
+### Publishing (Ready to Deploy)
+- [ ] Test package locally with npm pack
+- [ ] Test installation with npx from local tarball
+- [ ] Publish to npm registry (npm publish)
+- [ ] Test installation from npm: npx @uer/mcp@latest
+- [ ] Add version management documentation
+
+---
+
 ## Phase 2: Storage & Context (Day 1 Afternoon) ⏱️ 3 hours
 
 ### Storage Backend

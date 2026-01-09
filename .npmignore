@@ -1,0 +1,49 @@
+# Source files (only include built python/ directory)
+src/
+tests/
+context/
+
+# Development files
+.git/
+.github/
+.vscode/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Documentation (except README)
+docs/
+*.md
+!README.md
+
+# Config files
+.gitignore
+.pre-commit-config.yaml
+pyproject.toml
+uv.lock
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Dataset files
+seed_datasets.py
+*.jsonl
+*.json
+!package.json
+
+# Other
+TODO.md
+ADR.plan.md
+FEASIBILITY_REVIEW.md
+HACKATHON_RESOURCES.md
+MVP_PLAN.md
+Submission.md
+CONTRIBUTING.md
+CLAUDE.md

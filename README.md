@@ -176,10 +176,13 @@ Message 3: Continue → Complete! Here's your report...
 
 ### Prerequisites
 
-- **Python 3.11+**
-- **uv** package manager ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
+- **Node.js 14+** (for npm/npx)
+- **Python 3.11+** (automatically detected)
 - **Claude Desktop** (or any MCP-compatible client)
 - **At least one LLM API key** (see below)
+
+**Optional but recommended:**
+- **uv** package manager ([installation guide](https://docs.astral.sh/uv/getting-started/installation/)) - for better dependency management
 
 ### Step 1: Get API Keys
 
@@ -203,12 +206,22 @@ You need at least one LLM API key to use UER. We recommend starting with **Googl
 
 ### Step 2: Installation
 
+**Option A: Using npx (Recommended - Zero Installation)**
+
+No installation needed! Just configure Claude Desktop (Step 3) and it will automatically download and run the latest version.
+
+**Option B: Manual Installation (For Development)**
+
 ```bash
-# Clone or download the repository
+# Clone the repository
+git clone https://github.com/margusmartsepp/UER.git
 cd UER
 
 # Install dependencies
 uv sync
+
+# Build the npm package
+npm run build
 ```
 
 ### Step 3: Configure Claude Desktop
@@ -217,13 +230,13 @@ Add UER as an MCP server to Claude Desktop:
 
 **Location:** `%APPDATA%\Claude\claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac)
 
-**Minimal Configuration (Gemini only):**
+**Minimal Configuration (Gemini only - Using npx):**
 ```json
 {
   "mcpServers": {
     "uer": {
-      "command": "uv",
-      "args": ["--directory", "C:\\path\\to\\UER", "run", "python", "-m", "src.server"],
+      "command": "npx",
+      "args": ["@uer/mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "AIza_your_key_here"
       }
@@ -232,13 +245,13 @@ Add UER as an MCP server to Claude Desktop:
 }
 ```
 
-**Full Configuration (All providers):**
+**Full Configuration (All providers - Using npx):**
 ```json
 {
   "mcpServers": {
     "uer": {
-      "command": "uv",
-      "args": ["--directory", "C:\\path\\to\\UER", "run", "python", "-m", "src.server"],
+      "command": "npx",
+      "args": ["@uer/mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "AIza_your_key_here",
         "ANTHROPIC_API_KEY": "sk-ant-...",
@@ -254,8 +267,24 @@ Add UER as an MCP server to Claude Desktop:
 }
 ```
 
+**Manual Installation Configuration (For Development):**
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "uv",
+      "args": ["--directory", "C:\\path\\to\\UER", "run", "python", "-m", "uer.server"],
+      "env": {
+        "GEMINI_API_KEY": "AIza_your_key_here"
+      }
+    }
+  }
+}
+```
+
 **Important:**
-- Replace `C:\\path\\to\\UER` with your actual UER directory path
+- For npx: No path needed, just add your API keys
+- For manual install: Replace `C:\\path\\to\\UER` with your actual directory
 - Use double backslashes `\\` on Windows, or forward slashes `/` on Mac/Linux
 - Only include API keys for providers you want to use
 

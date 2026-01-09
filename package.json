@@ -1,0 +1,46 @@
+{
+  "name": "@uer/mcp",
+  "version": "1.0.0",
+  "description": "Universal Expert Registry - Multi-LLM MCP Server",
+  "main": "index.js",
+  "bin": {
+    "uer-mcp": "./bin/uer-mcp.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "python/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "python scripts/build_python.py",
+    "prepack": "npm run build",
+    "test": "node scripts/test_package.js"
+  },
+  "keywords": [
+    "mcp",
+    "llm",
+    "anthropic",
+    "openai",
+    "gemini",
+    "claude",
+    "chatgpt",
+    "ai",
+    "model-context-protocol"
+  ],
+  "author": "Margus Martsepp <margusmartsepp@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/margusmartsepp/UER.git"
+  },
+  "bugs": {
+    "url": "https://github.com/margusmartsepp/UER/issues"
+  },
+  "homepage": "https://github.com/margusmartsepp/UER#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
