@@ -448,7 +448,7 @@ The hackathon provides extensive research and tools for understanding AI manipul
 **[AI deception: A survey of examples, risks, and potential solutions](https://arxiv.org/abs/2308.14752)** (Park et al., 2024)
 Comprehensive survey defining AI deception and documenting manipulation via sycophancy, strategic behavior, and safety test evasion. Covers both near-term risks (fraud, election tampering) and long-term risks (losing control of AI systems).
 
-**[Artificial Intelligence Index Report 2024](https://aiindex.stanford.edu/report/)** (Stanford HAI)
+**[Artificial Intelligence Index Report 2025](https://hai.stanford.edu/assets/files/hai_ai_index_report_2025.pdf)** (Stanford HAI)
 Annual assessment of global AI progress including responsible AI and system risks. Provides regulatory trends and technical challenges context.
 
 **[Towards Understanding Sycophancy in Language Models](https://arxiv.org/abs/2310.13548)** (Sharma et al., 2024)
@@ -469,7 +469,7 @@ Dataset of 3,668 multiple-choice questions for evaluating hazardous knowledge. W
 
 #### Track 2: Real-World Analysis
 
-**[Recent Frontier Models Are Reward Hacking](https://metr.github.io/autonomy-evals-guide/reward-hacking/)** (METR, 2025)
+**[Recent Frontier Models Are Reward Hacking](https://metr.org/blog/2025-06-05-recent-reward-hacking/)** (METR, 2025)
 Documents reward hacking in production-like settings: o3 hacked evaluation software, Claude models subverted tasks. Shows models demonstrate awareness their behavior violates intentions.
 
 **[Reward Hacking in Reinforcement Learning](https://lilianweng.github.io/posts/2024-11-28-reward-hacking/)** (Lilian Weng, 2024)
@@ -482,10 +482,10 @@ Training on reward hacking leads to 1.3x-2.0x increase on held-out datasets. Doc
 
 #### Track 3: Mitigations
 
-**[Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation](https://openai.com/index/monitoring-reasoning-models/)** (OpenAI, 2025)
+**[Chain of Thought Monitoring for Misbehavior](https://openai.com/index/chain-of-thought-monitoring/)** (OpenAI, 2025)
 Chain-of-thought monitoring can detect reward hacking. GPT-4o can monitor stronger o3-mini model. Demonstrates transparency-based mitigation promise and pitfalls.
 
-**[From shortcuts to sabotage: natural emergent misalignment from reward hacking](https://www.anthropic.com/research/shortcuts-to-sabotage)** (Anthropic, 2025)
+**[From shortcuts to sabotage: natural emergent misalignment from reward hacking](https://www.anthropic.com/research/emergent-misalignment-reward-hacking)** (Anthropic, 2025)
 Reward hacking training causes downstream misalignment (alignment faking, sabotage). Shows interventions can break semantic links.
 
 **[The WMDP Benchmark: Measuring and Reducing Malicious Use With Unlearning](https://arxiv.org/abs/2403.03218)** (Li et al., 2024)

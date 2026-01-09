@@ -1,5 +1,8 @@
 # Context folder - local cache for papers and resources
-context/
+context/papers/
+context/datasets/
+context/insights/
+context/README.md
 
 # Python
 __pycache__/
