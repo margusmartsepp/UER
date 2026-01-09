@@ -3,8 +3,12 @@
 ## Prerequisites
 
 1. **npm account**: Create one at https://www.npmjs.com/signup
-2. **npm login**: Run `npm login` and enter your credentials
-3. **Package name availability**: Check if `uer-mcp` is available (or choose different name)
+2. **Enable 2FA**: Required for publishing packages
+   - Go to https://www.npmjs.com/settings/[your-username]/twofa
+   - Enable two-factor authentication (use authenticator app)
+   - **Important**: Choose "Authorization and Publishing" mode (not just "Authorization")
+3. **npm login**: Run `npm login` and enter your credentials
+4. **Package name availability**: Check if `uer-mcp` is available (or choose different name)
 
 ## Pre-Publishing Checklist
 
@@ -120,6 +124,21 @@ If `uer-mcp` is taken, try:
 Update `package.json` name field accordingly.
 
 ### Publishing Fails
+
+**Error: 403 Two-factor authentication required**
+
+If you get this error:
+```
+npm error 403 Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.
+```
+
+Solution:
+1. Go to https://www.npmjs.com/settings/[your-username]/twofa
+2. Enable 2FA with an authenticator app (Google Authenticator, Authy, etc.)
+3. **Important**: Select "Authorization and Publishing" mode
+4. Run `npm publish` again and enter the 2FA code when prompted
+
+**Other Publishing Issues**
 
 ```bash
 # Check if you're logged in
