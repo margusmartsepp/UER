@@ -1,7 +1,7 @@
 {
   "name": "uer-mcp",
   "version": "1.0.0",
-  "description": "Universal Expert Registry - Multi-LLM MCP Server",
+  "description": "Universal Expert Registry - Multi-LLM MCP Server with access to 100+ LLM providers, 1000+ MCP servers, and unlimited context storage",
   "main": "index.js",
   "bin": {
     "uer-mcp": "./bin/uer-mcp.js"
@@ -21,6 +21,7 @@
   },
   "keywords": [
     "mcp",
+    "mcp-server",
     "llm",
     "anthropic",
     "openai",
@@ -28,7 +29,10 @@
     "claude",
     "chatgpt",
     "ai",
-    "model-context-protocol"
+    "model-context-protocol",
+    "litellm",
+    "multi-agent",
+    "context-management"
   ],
   "author": "Margus Martsepp <margusmartsepp@gmail.com>",
   "license": "MIT",
@@ -42,5 +46,82 @@
   "homepage": "https://github.com/margusmartsepp/UER#readme",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "mcp": {
+    "displayName": "Universal Expert Registry",
+    "description": "Access 100+ LLM providers (Claude, GPT, Gemini, etc.), connect to 1000+ MCP servers, and manage unlimited context with external storage. Enables multi-agent workflows with subagent delegation.",
+    "features": [
+      "Universal LLM Access - Call any LLM through LiteLLM (Claude, GPT, Gemini, Bedrock, Azure, local models)",
+      "MCP Tool Orchestration - Connect to 1000+ MCP servers (filesystem, databases, browsers, etc.)",
+      "Shared Memory/Context - Break context window limits via external storage with URI references",
+      "Subagent Delegation - Spawn subagents with full chat history, not just single messages"
+    ],
+    "tools": [
+      {
+        "name": "llm_call",
+        "description": "Call any LLM provider (100+ models supported)"
+      },
+      {
+        "name": "mcp_call",
+        "description": "Call tools from other MCP servers"
+      },
+      {
+        "name": "put",
+        "description": "Store data in external context storage"
+      },
+      {
+        "name": "get",
+        "description": "Retrieve data from external context storage"
+      },
+      {
+        "name": "delegate",
+        "description": "Delegate tasks to subagents with full context"
+      },
+      {
+        "name": "search",
+        "description": "Search stored context and knowledge"
+      }
+    ],
+    "configuration": {
+      "required": [
+        "At least one LLM API key (GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY)"
+      ],
+      "env": {
+        "GEMINI_API_KEY": {
+          "description": "Google Gemini API key (get free at https://aistudio.google.com/api-keys)",
+          "required": false
+        },
+        "ANTHROPIC_API_KEY": {
+          "description": "Anthropic Claude API key",
+          "required": false
+        },
+        "OPENAI_API_KEY": {
+          "description": "OpenAI GPT API key",
+          "required": false
+        },
+        "AZURE_API_KEY": {
+          "description": "Azure OpenAI API key",
+          "required": false
+        },
+        "AZURE_API_BASE": {
+          "description": "Azure OpenAI endpoint URL",
+          "required": false
+        },
+        "AWS_ACCESS_KEY_ID": {
+          "description": "AWS access key for Bedrock",
+          "required": false
+        },
+        "AWS_SECRET_ACCESS_KEY": {
+          "description": "AWS secret key for Bedrock",
+          "required": false
+        },
+        "AWS_REGION_NAME": {
+          "description": "AWS region (e.g., us-east-1)",
+          "required": false
+        }
+      },
+      "quickStart": "Get a free Gemini API key at https://aistudio.google.com/api-keys - no credit card required!",
+      "documentation": "https://github.com/margusmartsepp/UER/blob/master/CONFIGURATION.md"
+    }
   }
 }
