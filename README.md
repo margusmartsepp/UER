@@ -1,9 +1,15 @@
-# Universal Expert Registry
+<div align="center">
+  <img src="img/uer.jpg" alt="UER Logo" width="200"/>
 
-[![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  # Universal Expert Registry
 
-> **ASI-Level Experts, Infinite Memory, Any Client**
+  [![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+  **ASI-Level Experts, Infinite Memory, Any Client**
+</div>
+
+---
 
 **Standard config** works in most MCP clients:
 > 💡 **Quick Start**: Get a free Gemini API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys)

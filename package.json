@@ -1,6 +1,6 @@
 {
   "name": "uer-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Universal Expert Registry - Multi-LLM MCP Server with access to 100+ LLM providers, 1000+ MCP servers, and unlimited context storage",
   "main": "index.js",
   "bin": {
@@ -10,6 +10,7 @@
     "bin/",
     "dist/",
     "python/",
+    "img/",
     "README.md",
     "LICENSE"
   ],
@@ -49,6 +50,7 @@
   },
   "mcp": {
     "displayName": "Universal Expert Registry",
+    "icon": "img/uer.jpg",
     "description": "Access 100+ LLM providers (Claude, GPT, Gemini, etc.), connect to 1000+ MCP servers, and manage unlimited context with external storage. Enables multi-agent workflows with subagent delegation.",
     "features": [
       "Universal LLM Access - Call any LLM through LiteLLM (Claude, GPT, Gemini, Bedrock, Azure, local models)",
