@@ -207,7 +207,7 @@
 **Goal:** Enable zero-installation deployment via npm/npx like Playwright MCP
 
 ### Package Structure
-- [x] Create package.json for @uer/mcp npm package
+- [x] Create package.json for uer-mcp npm package
 - [x] Create bin/uer-mcp.js entry point script
 - [x] Add build process to bundle Python code (scripts/build_python.py)
 - [x] Add dependency detection (uv, python)

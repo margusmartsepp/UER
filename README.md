@@ -236,7 +236,7 @@ Add UER as an MCP server to Claude Desktop:
   "mcpServers": {
     "uer": {
       "command": "npx",
-      "args": ["@uer/mcp@latest"],
+      "args": ["uer-mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "AIza_your_key_here"
       }
@@ -251,7 +251,7 @@ Add UER as an MCP server to Claude Desktop:
   "mcpServers": {
     "uer": {
       "command": "npx",
-      "args": ["@uer/mcp@latest"],
+      "args": ["uer-mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "AIza_your_key_here",
         "ANTHROPIC_API_KEY": "sk-ant-...",

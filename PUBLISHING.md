@@ -1,10 +1,10 @@
-# Publishing Guide for @uer/mcp
+# Publishing Guide for uer-mcp
 
 ## Prerequisites
 
 1. **npm account**: Create one at https://www.npmjs.com/signup
 2. **npm login**: Run `npm login` and enter your credentials
-3. **Package name availability**: Check if `@uer/mcp` is available (or choose different name)
+3. **Package name availability**: Check if `uer-mcp` is available (or choose different name)
 
 ## Pre-Publishing Checklist
 
@@ -46,19 +46,19 @@ npx ./uer-mcp-1.0.0.tgz
 npm login
 
 # Publish the package
-npm publish --access public
+npm publish
 
-# Note: Use --access public for scoped packages (@uer/mcp)
+# Note: No --access public needed for unscoped packages
 ```
 
 ### 4. Test Published Package
 
 ```bash
 # Test installation from npm
-npx @uer/mcp@latest
+npx uer-mcp@latest
 
 # Or install globally
-npm install -g @uer/mcp
+npm install -g uer-mcp
 uer-mcp
 ```
 
@@ -71,7 +71,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "uer": {
       "command": "npx",
-      "args": ["@uer/mcp@latest"],
+      "args": ["uer-mcp@latest"],
       "env": {
         "GEMINI_API_KEY": "your-key-here"
       }
@@ -105,14 +105,14 @@ npm publish
 npm publish --tag beta
 
 # Users can install with:
-npx @uer/mcp@beta
+npx uer-mcp@beta
 ```
 
 ## Troubleshooting
 
 ### Package Name Already Taken
 
-If `@uer/mcp` is taken, try:
+If `uer-mcp` is taken, try:
 - `@margusmartsepp/uer-mcp`
 - `uer-mcp-server`
 - `universal-expert-registry`
@@ -126,7 +126,7 @@ Update `package.json` name field accordingly.
 npm whoami
 
 # Check package name availability
-npm view @uer/mcp
+npm view uer-mcp
 
 # Verify package.json is valid
 npm pack --dry-run
@@ -153,18 +153,18 @@ npm test
 Add to README.md:
 
 ```markdown
-[![npm version](https://badge.fury.io/js/%40uer%2Fmcp.svg)](https://www.npmjs.com/package/@uer/mcp)
-[![npm downloads](https://img.shields.io/npm/dm/@uer/mcp.svg)](https://www.npmjs.com/package/@uer/mcp)
+[![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
 ```
 
 ## Unpublishing (Emergency Only)
 
 ```bash
 # Unpublish specific version (within 72 hours)
-npm unpublish @uer/mcp@1.0.0
+npm unpublish uer-mcp@1.0.0
 
 # Deprecate instead (preferred)
-npm deprecate @uer/mcp@1.0.0 "Please upgrade to 1.0.1"
+npm deprecate uer-mcp@1.0.0 "Please upgrade to 1.0.1"
 ```
 
 ## Continuous Integration

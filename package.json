@@ -1,5 +1,5 @@
 {
-  "name": "@uer/mcp",
+  "name": "uer-mcp",
   "version": "1.0.0",
   "description": "Universal Expert Registry - Multi-LLM MCP Server",
   "main": "index.js",
