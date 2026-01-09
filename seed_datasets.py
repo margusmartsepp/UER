@@ -21,13 +21,7 @@ from pathlib import Path
 def run_command(cmd, cwd=None, check=True):
     """Run command and return success status."""
     print(f"  Running: {cmd}")
-    result = subprocess.run(
-        cmd,
-        shell=True,
-        cwd=cwd,
-        capture_output=True,
-        text=True
-    )
+    result = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True)
 
     if result.returncode != 0:
         print(f"  [ERROR] {result.stderr}")
@@ -130,7 +124,7 @@ def download_wildchat(datasets_dir):
                 return obj.isoformat()
             raise TypeError(f"Type {type(obj)} not serializable")
 
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(conversations, f, indent=2, default=json_serializer)
 
         size_mb = output_file.stat().st_size / 1024 / 1024
@@ -153,8 +147,7 @@ def clone_eval_harness(datasets_dir):
         return True
 
     if not run_command(
-        "git clone https://github.com/EleutherAI/lm-evaluation-harness.git",
-        cwd=datasets_dir
+        "git clone https://github.com/EleutherAI/lm-evaluation-harness.git", cwd=datasets_dir
     ):
         return False
 
@@ -164,9 +157,9 @@ def clone_eval_harness(datasets_dir):
 
 def print_summary(datasets_dir):
     """Print summary of downloaded datasets."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("SETUP COMPLETE!")
-    print("="*60)
+    print("=" * 60)
 
     # Count WMDP files
     wmdp_files = list((datasets_dir / "wmdp_questions").glob("*.json"))
@@ -186,22 +179,22 @@ def print_summary(datasets_dir):
     # Check eval harness
     harness_dir = datasets_dir / "lm-evaluation-harness"
     if harness_dir.exists():
-        print(f"\nlm-evaluation-harness: installed")
+        print("\nlm-evaluation-harness: installed")
     else:
-        print(f"\nlm-evaluation-harness: [MISSING]")
+        print("\nlm-evaluation-harness: [MISSING]")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Next steps:")
     print("  1. Test sandbagging:  cd context/scripts && python test_wmdp.py --limit 10")
     print("  2. Test sycophancy:   python test_sycophancy.py")
-    print("="*60)
+    print("=" * 60)
 
 
 def main():
     """Main setup function."""
-    print("="*60)
+    print("=" * 60)
     print("UER Dataset Setup")
-    print("="*60)
+    print("=" * 60)
 
     # Run setup steps
     datasets_dir = setup_directories()
