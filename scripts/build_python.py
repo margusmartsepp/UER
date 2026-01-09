@@ -23,9 +23,13 @@ def build() -> int:
     # Create python distribution directory
     python_dist.mkdir(parents=True, exist_ok=True)
 
-    # Copy source code
+    # Copy source code (excluding __pycache__ and other build artifacts)
     print(f"Copying source from {src} to {python_dist / 'src'}")
-    shutil.copytree(src, python_dist / "src")
+    shutil.copytree(
+        src,
+        python_dist / "src",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo", "*.pyd", ".pytest_cache"),
+    )
 
     # Copy dependency files
     print("Copying dependency files...")
