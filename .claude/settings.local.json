@@ -6,7 +6,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: add pre-commit hooks configuration\n\nAdd .pre-commit-config.yaml with automated code quality checks:\n\nFormatters & Linters:\n- black: Code formatting \\(line length 100, Python 3.11\\)\n- ruff: Fast linting with auto-fix\n- mypy: Static type checking in strict mode\n\nPre-commit Hooks:\n- trailing-whitespace: Remove trailing whitespace\n- end-of-file-fixer: Ensure files end with newline\n- check-yaml: Validate YAML files\n- check-added-large-files: Prevent large file commits \\(>1MB\\)\n- check-merge-conflict: Detect merge conflict markers\n- check-toml: Validate TOML files\n- detect-private-key: Prevent committing private keys\n\nSetup:\n  pip install pre-commit\n  pre-commit install\n\nRun manually:\n  pre-commit run --all-files\n\nThis ensures code quality and security before each commit.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "WebFetch(domain:apartresearch.com)"
+      "WebFetch(domain:apartresearch.com)",
+      "WebFetch(domain:arxiv.org)",
+      "Bash(curl:*)"
     ]
   }
 }
