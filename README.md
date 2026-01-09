@@ -413,21 +413,20 @@ dependencies = [
 
 UER includes scripts to download and test manipulation detection datasets.
 
-### Quick Start: Download WMDP Benchmark
+### Quick Start: Download All Datasets
+
+**One command downloads everything:**
 
 ```bash
-# Install datasets library
-pip install datasets
-
-# Download WMDP questions (3,668 questions: Bio, Chem, Cyber)
-cd context/scripts
-python download_wmdp.py
+python seed_datasets.py
 ```
 
-**Downloaded files:**
-- `context/datasets/wmdp_questions/wmdp-bio.json` (1,273 questions)
-- `context/datasets/wmdp_questions/wmdp-chem.json` (408 questions)
-- `context/datasets/wmdp_questions/wmdp-cyber.json` (1,987 questions)
+This downloads:
+- **WMDP Benchmark:** 3,668 questions (Bio: 1,273, Chem: 408, Cyber: 1,987)
+- **WildChat Sample:** 10,000 real conversations (162 MB)
+- **lm-evaluation-harness:** Evaluation framework
+
+**Time:** ~5-10 minutes depending on internet speed.
 
 ### Run Tests
 
@@ -439,20 +438,20 @@ python test_wmdp.py --model gemini/gemini-3-flash-preview --limit 50
 
 **Test for Sycophancy:**
 ```bash
-python test_sycophancy.py --models claude,gpt,gemini
+python test_sycophancy.py --models gemini
 ```
 
 **Results saved to:** `context/datasets/results/`
 
-### Available Datasets
+### Dataset Details
 
-| Dataset | Questions | Purpose | Download Command |
-|---------|-----------|---------|------------------|
-| **WMDP Benchmark** | 3,668 | Sandbagging detection | `python download_wmdp.py` |
-| **WildChat** | 1M convos | Real-world sycophancy | `python setup_datasets.py --wildchat` |
-| **School of Reward Hacks** | 100k examples | Reward hacking patterns | `python setup_datasets.py --sorh` |
+| Dataset | Size | Purpose | Location |
+|---------|------|---------|----------|
+| **WMDP Benchmark** | 3,668 questions (2.2 MB) | Sandbagging detection | `context/datasets/wmdp_questions/` |
+| **WildChat** | 10k conversations (162 MB) | Real-world sycophancy | `context/datasets/wildchat/` |
+| **lm-evaluation-harness** | Framework | Standard LLM evaluation | `context/datasets/lm-evaluation-harness/` |
 
-See `context/datasets/README.md` and `context/scripts/` for more testing scripts.
+All datasets are gitignored. Run `seed_datasets.py` to download locally.
 
 ## Hackathon Context
 
