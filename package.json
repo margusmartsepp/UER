@@ -4,7 +4,7 @@
   "description": "Universal Expert Registry - Multi-LLM MCP Server with access to 100+ LLM providers, 1000+ MCP servers, and unlimited context storage",
   "main": "index.js",
   "bin": {
-    "uer-mcp": "./bin/uer-mcp.js"
+    "uer-mcp": "bin/uer-mcp.js"
   },
   "files": [
     "bin/",
@@ -39,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/margusmartsepp/UER.git"
+    "url": "git+https://github.com/margusmartsepp/UER.git"
   },
   "bugs": {
     "url": "https://github.com/margusmartsepp/UER/issues"
