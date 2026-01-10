@@ -1,5 +1,4 @@
-# Context folder - local cache for papers and resources
-context/papers/
+# Context folder - local cache for datasets and insights
 context/datasets/
 context/insights/
 context/README.md
