@@ -14,6 +14,8 @@ from uer.llm.gateway import LLMGateway
 from uer.mcp.config import MCPConfig
 from uer.mcp.manager import MCPManager
 from uer.models.llm import LLMCallRequest
+from uer.storage import StorageManager
+from uer.tools import storage_tools, skills_tools, template_tools
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +30,12 @@ gateway = LLMGateway()
 # Load MCP config from environment or use default
 mcp_config = MCPConfig.from_env() or MCPConfig.default()
 mcp_manager = MCPManager(mcp_config)
+
+# Initialize S3-compatible storage
+storage_manager = StorageManager()
+storage_tools.init_storage(storage_manager)
+skills_tools.init_skills(storage_manager.backend)
+template_tools.init_templates(storage_manager.backend)
 
 
 @app.list_tools()
@@ -266,12 +274,30 @@ async def list_tools() -> list[Tool]:
                 "required": ["operation"],
             },
         ),
+        # Storage tools
+        storage_tools.get_storage_put_tool(),
+        storage_tools.get_storage_get_tool(),
+        storage_tools.get_storage_list_tool(),
+        storage_tools.get_storage_delete_tool(),
+        storage_tools.get_storage_exists_tool(),
+        # Skills tools
+        skills_tools.get_skill_create_tool(),
+        skills_tools.get_skill_get_tool(),
+        skills_tools.get_skill_list_tool(),
+        skills_tools.get_skill_export_tool(),
+        skills_tools.get_skill_to_prompt_tool(),
+        # Template tools
+        template_tools.get_template_render_tool(),
+        template_tools.get_template_list_tool(),
+        template_tools.get_template_create_tool(),
+        template_tools.get_template_delete_tool(),
     ]
 
 
 @app.call_tool()
 async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
     """Handle tool invocation."""
+    # LLM and MCP tools
     if name == "llm_call":
         return await handle_llm_call(arguments)
     elif name == "mcp_call":
@@ -282,6 +308,37 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await handle_mcp_registry(arguments)
     elif name == "mcp_servers":
         return await handle_mcp_servers(arguments)
+    # Storage tools
+    elif name == "storage_put":
+        return await storage_tools.storage_put(arguments)
+    elif name == "storage_get":
+        return await storage_tools.storage_get(arguments)
+    elif name == "storage_list":
+        return await storage_tools.storage_list(arguments)
+    elif name == "storage_delete":
+        return await storage_tools.storage_delete(arguments)
+    elif name == "storage_exists":
+        return await storage_tools.storage_exists(arguments)
+    # Skills tools
+    elif name == "skill_create":
+        return await skills_tools.skill_create(arguments)
+    elif name == "skill_get":
+        return await skills_tools.skill_get(arguments)
+    elif name == "skill_list":
+        return await skills_tools.skill_list(arguments)
+    elif name == "skill_export":
+        return await skills_tools.skill_export(arguments)
+    elif name == "skill_to_prompt":
+        return await skills_tools.skill_to_prompt(arguments)
+    # Template tools
+    elif name == "template_render":
+        return await template_tools.template_render(arguments)
+    elif name == "template_list":
+        return await template_tools.template_list(arguments)
+    elif name == "template_create":
+        return await template_tools.template_create(arguments)
+    elif name == "template_delete":
+        return await template_tools.template_delete(arguments)
     else:
         raise ValueError(f"Unknown tool: {name}")
 
