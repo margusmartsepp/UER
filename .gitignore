@@ -52,6 +52,9 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
+# MinIO storage data
+data/minio/
+
 # Logs
 *.log
 logs/
