@@ -84,8 +84,16 @@ class MCPManager:
                 raise NotImplementedError(f"Transport {server_config.transport} not supported")
 
         except Exception as e:
-            logger.error(f"MCP operation failed on {server_name}: {e}")
-            raise RuntimeError(f"MCP operation failed on {server_name}: {e}") from e
+            logger.exception(f"MCP operation failed on {server_name}: {e}")
+            error_msg = str(e)
+            if server_config.transport in ("sse", "http") and "huggingface" in server_name.lower():
+                hf_help = (
+                    " | For Hugging Face MCP: Use url='https://huggingface.co/mcp?login' "
+                    "for OAuth, or url='https://huggingface.co/mcp' with "
+                    "headers={'Authorization': 'Bearer <token>'}"
+                )
+                error_msg += hf_help
+            raise RuntimeError(f"MCP operation failed on {server_name}: {error_msg}") from e
 
     async def list_tools(self, server_name: str) -> list[dict[str, Any]]:
         """List all tools available from an MCP server."""

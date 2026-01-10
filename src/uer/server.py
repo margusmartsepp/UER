@@ -201,7 +201,8 @@ async def list_tools() -> list[Tool]:
                 "Use 'list' to see configured servers, 'get' to view one server, "
                 "'add' to manually create servers, 'update' to modify existing ones, "
                 "'delete' to remove servers. "
-                "For installing from registry, use mcp_registry tool instead."
+                "For installing from registry, use mcp_registry tool instead. "
+                "For OAuth-based servers (like Hugging Face), use headers={'Authorization': 'Bearer <token>'}."
             ),
             inputSchema={
                 "type": "object",
