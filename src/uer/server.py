@@ -15,7 +15,7 @@ from uer.mcp.config import MCPConfig
 from uer.mcp.manager import MCPManager
 from uer.models.llm import LLMCallRequest
 from uer.storage import StorageManager
-from uer.tools import storage_tools, skills_tools, template_tools
+from uer.tools import skills_tools, storage_tools, template_tools
 
 # Configure logging
 logging.basicConfig(
@@ -31,11 +31,14 @@ gateway = LLMGateway()
 mcp_config = MCPConfig.from_env() or MCPConfig.default()
 mcp_manager = MCPManager(mcp_config)
 
-# Initialize S3-compatible storage
+# Initialize S3-compatible storage (optional)
 storage_manager = StorageManager()
-storage_tools.init_storage(storage_manager)
-skills_tools.init_skills(storage_manager.backend)
-template_tools.init_templates(storage_manager.backend)
+if storage_manager.is_available():
+    storage_tools.init_storage(storage_manager)
+    # Note: skills and templates will be initialized lazily when storage backend is created
+    logger.info("Storage backend enabled")
+else:
+    logger.info("Storage backend disabled - storage/skills/template tools will not be available")
 
 
 @app.list_tools()
@@ -45,7 +48,7 @@ async def list_tools() -> list[Tool]:
 
     mcp_servers = mcp_manager.list_servers()
 
-    return [
+    tools = [
         Tool(
             name="llm_call",
             description=(
@@ -274,24 +277,33 @@ async def list_tools() -> list[Tool]:
                 "required": ["operation"],
             },
         ),
-        # Storage tools
-        storage_tools.get_storage_put_tool(),
-        storage_tools.get_storage_get_tool(),
-        storage_tools.get_storage_list_tool(),
-        storage_tools.get_storage_delete_tool(),
-        storage_tools.get_storage_exists_tool(),
-        # Skills tools
-        skills_tools.get_skill_create_tool(),
-        skills_tools.get_skill_get_tool(),
-        skills_tools.get_skill_list_tool(),
-        skills_tools.get_skill_export_tool(),
-        skills_tools.get_skill_to_prompt_tool(),
-        # Template tools
-        template_tools.get_template_render_tool(),
-        template_tools.get_template_list_tool(),
-        template_tools.get_template_create_tool(),
-        template_tools.get_template_delete_tool(),
     ]
+
+    # Conditionally add storage-dependent tools
+    if storage_manager.is_available():
+        tools.extend(
+            [
+                # Storage tools
+                storage_tools.get_storage_put_tool(),
+                storage_tools.get_storage_get_tool(),
+                storage_tools.get_storage_list_tool(),
+                storage_tools.get_storage_delete_tool(),
+                storage_tools.get_storage_exists_tool(),
+                # Skills tools
+                skills_tools.get_skill_create_tool(),
+                skills_tools.get_skill_get_tool(),
+                skills_tools.get_skill_list_tool(),
+                skills_tools.get_skill_export_tool(),
+                skills_tools.get_skill_to_prompt_tool(),
+                # Template tools
+                template_tools.get_template_render_tool(),
+                template_tools.get_template_list_tool(),
+                template_tools.get_template_create_tool(),
+                template_tools.get_template_delete_tool(),
+            ]
+        )
+
+    return tools
 
 
 @app.call_tool()

@@ -4,11 +4,8 @@ Storage manager with URI parsing and convenience methods.
 Handles URI parsing and provides a clean interface for storage operations.
 """
 
-import os
-from typing import Optional
-
-from .base import ObjectMetadata, Retention, StorageBackend
-from .minio_backend import MinIOBackend
+from .base import ObjectMetadata, Retention, StorageBackend, StorageError
+from .config import storage_config
 
 
 def parse_uri(uri: str) -> tuple[str, str]:
@@ -58,9 +55,7 @@ def parse_uri(uri: str) -> tuple[str, str]:
         return bucket, key
 
     else:
-        raise ValueError(
-            f"Invalid URI scheme. Must start with 's3://' or 'registry://': {uri}"
-        )
+        raise ValueError(f"Invalid URI scheme. Must start with 's3://' or 'registry://': {uri}")
 
 
 class StorageManager:
@@ -70,21 +65,48 @@ class StorageManager:
     Wraps a StorageBackend and provides a clean interface for storage operations.
     """
 
-    def __init__(self, backend: Optional[StorageBackend] = None):
+    def __init__(self, backend: StorageBackend | None = None):
         """
         Initialize storage manager.
 
         Args:
             backend: Storage backend to use (default: MinIOBackend from environment)
         """
-        self.backend = backend or self._create_default_backend()
+        self.backend: StorageBackend | None = backend
+        self._backend_initialized = False
 
-    def _create_default_backend(self) -> StorageBackend:
-        """Create default storage backend from environment."""
-        backend_type = os.getenv("STORAGE_BACKEND", "minio").lower()
+    def _ensure_backend(self) -> StorageBackend:
+        """Ensure storage backend is initialized (lazy initialization)."""
+        if self.backend is not None:
+            return self.backend
+
+        if self._backend_initialized:
+            raise StorageError(
+                "Storage backend is not available. "
+                "Set STORAGE_ENABLED=true and configure storage credentials."
+            )
+
+        self._backend_initialized = True
+
+        # Check if storage is enabled
+        if not storage_config.is_available():
+            raise StorageError(
+                "Storage is disabled. Enable with STORAGE_ENABLED=true and configure credentials."
+            )
+
+        # Create backend based on configuration
+        backend_type = storage_config.backend_type
 
         if backend_type == "minio":
-            return MinIOBackend()
+            from .minio_backend import MinIOBackend
+
+            self.backend = MinIOBackend(
+                endpoint=storage_config.endpoint,
+                access_key=storage_config.access_key,
+                secret_key=storage_config.secret_key,
+                secure=storage_config.secure,
+            )
+            return self.backend
         elif backend_type == "s3":
             # Future: AWS S3 backend
             raise NotImplementedError("S3 backend not yet implemented")
@@ -94,12 +116,16 @@ class StorageManager:
         else:
             raise ValueError(f"Unknown storage backend: {backend_type}")
 
+    def is_available(self) -> bool:
+        """Check if storage backend is available."""
+        return storage_config.is_available()
+
     async def put(
         self,
         uri: str,
         data: bytes | str,
         content_type: str = "application/octet-stream",
-        metadata: Optional[dict[str, str]] = None,
+        metadata: dict[str, str] | None = None,
     ) -> ObjectMetadata:
         """
         Store object at URI.
@@ -120,13 +146,14 @@ class StorageManager:
             ...     content_type="application/json"
             ... )
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
 
         # Convert string to bytes if needed
         if isinstance(data, str):
             data = data.encode("utf-8")
 
-        return await self.backend.put_object(bucket, key, data, content_type, metadata)
+        return await backend.put_object(bucket, key, data, content_type, metadata)
 
     async def get(self, uri: str) -> tuple[bytes, ObjectMetadata]:
         """
@@ -142,8 +169,9 @@ class StorageManager:
             >>> data, meta = await storage.get("registry://context/report.json")
             >>> content = data.decode('utf-8')
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
-        return await self.backend.get_object(bucket, key)
+        return await backend.get_object(bucket, key)
 
     async def get_text(self, uri: str) -> str:
         """
@@ -192,8 +220,9 @@ class StorageManager:
         Example:
             >>> deleted = await storage.delete("registry://context/old-report.json")
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
-        return await self.backend.delete_object(bucket, key)
+        return await backend.delete_object(bucket, key)
 
     async def list(self, uri: str, recursive: bool = True) -> list[ObjectMetadata]:
         """
@@ -213,8 +242,9 @@ class StorageManager:
             >>> # List all files in a skill (recursive)
             >>> files = await storage.list("registry://skills/financial-analysis/")
         """
+        backend = self._ensure_backend()
         bucket, prefix = parse_uri(uri)
-        return await self.backend.list_objects(bucket, prefix, recursive)
+        return await backend.list_objects(bucket, prefix, recursive)
 
     async def exists(self, uri: str) -> bool:
         """
@@ -229,8 +259,9 @@ class StorageManager:
         Example:
             >>> exists = await storage.exists("registry://context/report.json")
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
-        return await self.backend.object_exists(bucket, key)
+        return await backend.object_exists(bucket, key)
 
     async def set_retention(self, uri: str, retention: Retention) -> None:
         """
@@ -248,8 +279,9 @@ class StorageManager:
             ... )
             >>> await storage.set_retention("registry://audit/log.json", retention)
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
-        await self.backend.set_object_retention(bucket, key, retention)
+        await backend.set_object_retention(bucket, key, retention)
 
     async def get_retention(self, uri: str) -> Retention | None:
         """
@@ -266,5 +298,6 @@ class StorageManager:
             >>> if retention:
             ...     print(f"Locked until {retention.retain_until_date}")
         """
+        backend = self._ensure_backend()
         bucket, key = parse_uri(uri)
-        return await self.backend.get_object_retention(bucket, key)
+        return await backend.get_object_retention(bucket, key)

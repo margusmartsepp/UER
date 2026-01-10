@@ -190,6 +190,79 @@ delegate(
 
 See [docs/ADR-002-S3-Storage-Architecture.md](docs/ADR-002-S3-Storage-Architecture.md) for details.
 
+#### Storage Configuration Options
+
+UER supports three deployment scenarios for storage:
+
+**Option 1: Docker MinIO (Recommended for Development)**
+
+If you have Docker installed, start MinIO with one command:
+
+```bash
+docker-compose up -d
+```
+
+This starts MinIO on `localhost:9000` with default credentials (`minioadmin`/`minioadmin`). UER will automatically connect and create the required buckets (`uer-context`, `uer-skills`, `uer-templates`) on first use.
+
+Access the MinIO console at `http://localhost:9001` to browse stored objects.
+
+**Option 2: Custom S3-Compatible Storage**
+
+For production or if you don't use Docker, configure your own S3-compatible storage:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "your-key-here",
+        "STORAGE_BACKEND": "minio",
+        "MINIO_ENDPOINT": "your-minio-server.com:9000",
+        "MINIO_ACCESS_KEY": "your-access-key",
+        "MINIO_SECRET_KEY": "your-secret-key",
+        "MINIO_SECURE": "true"
+      }
+    }
+  }
+}
+```
+
+Supports any S3-compatible storage:
+- **MinIO** (self-hosted)
+- **AWS S3** (use `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`)
+- **NetApp StorageGRID**
+- **Wasabi**, **Backblaze B2**, **DigitalOcean Spaces**
+
+**Option 3: Disabled Storage (LLM/MCP Only)**
+
+If you only need LLM and MCP features without storage:
+
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "your-key-here",
+        "STORAGE_ENABLED": "false"
+      }
+    }
+  }
+}
+```
+
+With storage disabled:
+- ✅ `llm_call` - Call any LLM
+- ✅ `mcp_call`, `mcp_list_tools`, `mcp_servers` - MCP orchestration
+- ❌ Storage tools (`storage_put`, `storage_get`, etc.) - Not available
+- ❌ Skills tools (`skill_create`, `skill_get`, etc.) - Not available
+- ❌ Template tools (`template_render`, etc.) - Not available
+
+The server will start successfully without storage, and LLMs won't see storage-related tools in their tool list.
+
 ### 4. Full Chat History for Subagents
 
 Build complete conversation context, not just single messages:
