@@ -73,9 +73,27 @@ async function main() {
     command = uv;
     args = ['--directory', pythonDir, 'run', 'python', '-m', 'uer.server'];
   } else {
-    // Fallback to direct python
+    // Fallback to direct python - need to install dependencies first
     console.error('Starting UER MCP server with python...');
     console.error('Tip: Install uv for better dependency management: https://docs.astral.sh/uv/');
+
+    // Check if dependencies are installed, if not, install them
+    try {
+      execSync(`"${python}" -c "import uer"`, { cwd: pythonDir, stdio: 'ignore' });
+    } catch {
+      console.error('Installing UER dependencies (first run only)...');
+      try {
+        execSync(`"${python}" -m pip install -e .`, { cwd: pythonDir, stdio: 'inherit' });
+      } catch (installError) {
+        console.error('\nFailed to install dependencies. Please install manually:');
+        console.error(`  cd ${pythonDir}`);
+        console.error(`  ${python} -m pip install -e .`);
+        console.error('\nOr install uv for automatic dependency management:');
+        console.error('  pip install uv');
+        process.exit(1);
+      }
+    }
+
     command = python;
     args = ['-m', 'uer.server'];
   }
