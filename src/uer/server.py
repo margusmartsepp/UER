@@ -158,6 +158,51 @@ async def list_tools() -> list[Tool]:
                 "required": ["server"],
             },
         ),
+        Tool(
+            name="mcp_configure",
+            description=(
+                "Add or update an MCP server configuration. "
+                "Use this to enable filesystem access, add GitHub integration, etc. "
+                "Common servers: filesystem (needs directory path), sqlite (needs db path), "
+                "github (needs token), puppeteer, brave-search, google-maps."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "server_name": {
+                        "type": "string",
+                        "description": "Unique name for the MCP server (e.g., 'filesystem', 'github')",
+                    },
+                    "command": {
+                        "type": "string",
+                        "description": "Command to execute (usually 'npx' for npm packages)",
+                        "default": "npx",
+                    },
+                    "args": {
+                        "type": "array",
+                        "description": (
+                            "Command arguments. For filesystem: "
+                            "['-y', '@modelcontextprotocol/server-filesystem', '/path/to/directory']. "
+                            "For github: ['-y', '@modelcontextprotocol/server-github']"
+                        ),
+                        "items": {"type": "string"},
+                    },
+                    "env": {
+                        "type": "object",
+                        "description": "Environment variables (e.g., {'GITHUB_PERSONAL_ACCESS_TOKEN': 'token'})",
+                        "additionalProperties": {"type": "string"},
+                        "default": {},
+                    },
+                    "transport": {
+                        "type": "string",
+                        "description": "Transport type (currently only 'stdio' is supported)",
+                        "default": "stdio",
+                        "enum": ["stdio"],
+                    },
+                },
+                "required": ["server_name", "args"],
+            },
+        ),
     ]
 
 
@@ -170,6 +215,8 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await handle_mcp_call(arguments)
     elif name == "mcp_list_tools":
         return await handle_mcp_list_tools(arguments)
+    elif name == "mcp_configure":
+        return await handle_mcp_configure(arguments)
     else:
         raise ValueError(f"Unknown tool: {name}")
 
@@ -315,6 +362,69 @@ async def handle_mcp_call(arguments: Any) -> Sequence[TextContent]:
 
     except Exception as e:
         logger.exception(f"Unexpected error in mcp_call: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
+            )
+        ]
+
+
+async def handle_mcp_configure(arguments: Any) -> Sequence[TextContent]:
+    """Handle mcp_configure tool invocation."""
+    try:
+        server_name = arguments.get("server_name")
+        command = arguments.get("command", "npx")
+        args = arguments.get("args")
+        env = arguments.get("env", {})
+        transport = arguments.get("transport", "stdio")
+
+        if not server_name or not args:
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "error": "Missing required parameters",
+                            "message": "server_name and args are required",
+                        }
+                    ),
+                )
+            ]
+
+        logger.info(f"Configuring MCP server: {server_name}")
+
+        # Add server to manager's config
+        from uer.mcp.config import MCPServerConfig
+
+        new_server = MCPServerConfig(
+            name=server_name, command=command, args=args, env=env, transport=transport
+        )
+
+        mcp_manager.config.servers[server_name] = new_server
+
+        logger.info(f"Successfully configured MCP server: {server_name}")
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(
+                    {
+                        "success": True,
+                        "message": f"MCP server '{server_name}' configured successfully",
+                        "server": {
+                            "name": server_name,
+                            "command": command,
+                            "args": args,
+                            "env": env,
+                            "transport": transport,
+                        },
+                    },
+                    indent=2,
+                ),
+            )
+        ]
+
+    except Exception as e:
+        logger.exception(f"Unexpected error in mcp_configure: {str(e)}")
         return [
             TextContent(
                 type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
