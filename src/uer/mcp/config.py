@@ -32,7 +32,7 @@ class MCPConfig(BaseModel):
 
     @classmethod
     def default(cls) -> "MCPConfig":
-        """Create default configuration with filesystem MCP."""
+        """Create default configuration with common MCP servers for testing."""
         return cls(
             servers={
                 "filesystem": MCPServerConfig(
@@ -40,6 +40,18 @@ class MCPConfig(BaseModel):
                     command="npx",
                     args=["-y", "@modelcontextprotocol/server-filesystem", "."],
                     transport="stdio",
-                )
+                ),
+                "memory": MCPServerConfig(
+                    name="memory",
+                    command="npx",
+                    args=["-y", "@modelcontextprotocol/server-memory"],
+                    transport="stdio",
+                ),
+                "fetch": MCPServerConfig(
+                    name="fetch",
+                    command="npx",
+                    args=["-y", "@modelcontextprotocol/server-fetch"],
+                    transport="stdio",
+                ),
             }
         )
