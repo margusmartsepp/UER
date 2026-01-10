@@ -1,6 +1,6 @@
 {
   "name": "uer-mcp",
-  "version": "1.0.3",
+  "version": "3.0.0",
   "description": "Universal Expert Registry - Multi-LLM MCP Server with access to 100+ LLM providers, 1000+ MCP servers, and unlimited context storage",
   "main": "index.js",
   "bin": {
