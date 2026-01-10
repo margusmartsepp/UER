@@ -495,6 +495,19 @@ When new models are released, update these files:
 - [ ] `TODO.md` - Phase 1 environment configuration
 - [ ] `docs/LITELLM_GUIDE.md` - Provider examples
 
+### Architecture Decision Records
+
+UER uses ADRs to document major architectural decisions:
+
+- **[ADR.plan.md](ADR.plan.md)** - Main architecture (LiteLLM-based unified gateway)
+- **[docs/ADR-002-S3-Storage-Architecture.md](docs/ADR-002-S3-Storage-Architecture.md)** - Storage layer architecture (S3-native with MinIO, Skills API compliance, Jinja2 templates)
+
+Refer to these ADRs for:
+- Storage backend implementation (S3-compatible, not SQLite)
+- Claude Skills API compliance and cross-LLM usage
+- Template system architecture (Jinja2 with context expansion)
+- WORM/compliance features for legal and audit use cases
+
 ### Version History
 
 | Date | Update |
