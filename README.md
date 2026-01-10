@@ -27,7 +27,7 @@
 }
 ```
 
-
+> **📦 Storage is optional**: This config works immediately for LLM and MCP features. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
 
 > **⚠️ Required**: Add at least one API key to the `env` section. See [CONFIGURATION.md](CONFIGURATION.md) for all provider links and detailed setup.
 
