@@ -1,5 +1,7 @@
 """MCP server configuration models."""
 
+import json
+import os
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -31,16 +33,48 @@ class MCPConfig(BaseModel):
         return cls(servers=servers)
 
     @classmethod
+    def from_env(cls) -> "MCPConfig | None":
+        """Load MCP configuration from UER_MCP_SERVERS environment variable.
+
+        Expected format (JSON):
+        {
+            "filesystem": {
+                "command": "npx",
+                "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path"],
+                "transport": "stdio"
+            }
+        }
+        """
+        env_config = os.environ.get("UER_MCP_SERVERS")
+        if not env_config:
+            return None
+
+        try:
+            data = json.loads(env_config)
+            return cls.from_dict(data)
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(f"Invalid UER_MCP_SERVERS format: {e}") from e
+
+    @classmethod
     def default(cls) -> "MCPConfig":
-        """Create default configuration with common MCP servers for testing."""
+        """Create default configuration with common MCP servers for testing.
+
+        Note: Filesystem server is disabled by default. Users should configure it
+        with their desired allowed directories via environment variable or config file.
+        """
         return cls(
             servers={
-                "filesystem": MCPServerConfig(
-                    name="filesystem",
-                    command="npx",
-                    args=["-y", "@modelcontextprotocol/server-filesystem", "."],
-                    transport="stdio",
-                ),
+                # Filesystem disabled by default - needs explicit directory configuration
+                # "filesystem": MCPServerConfig(
+                #     name="filesystem",
+                #     command="npx",
+                #     args=[
+                #         "-y",
+                #         "@modelcontextprotocol/server-filesystem",
+                #         "/path/to/allowed/dir",
+                #     ],
+                #     transport="stdio",
+                # ),
                 "memory": MCPServerConfig(
                     name="memory",
                     command="npx",

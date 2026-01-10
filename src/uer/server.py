@@ -24,7 +24,10 @@ logger = logging.getLogger("uer.server")
 # Initialize MCP server
 app = Server("uer")
 gateway = LLMGateway()
-mcp_manager = MCPManager(MCPConfig.default())
+
+# Load MCP config from environment or use default
+mcp_config = MCPConfig.from_env() or MCPConfig.default()
+mcp_manager = MCPManager(mcp_config)
 
 
 @app.list_tools()

@@ -4,11 +4,12 @@ This guide shows how to test UER's MCP orchestration capabilities with various M
 
 ## Available MCP Servers
 
-UER comes pre-configured with 3 MCP servers for testing:
+UER comes pre-configured with 2 MCP servers for testing:
 
-1. **filesystem** - File operations (read, write, list, search)
-2. **memory** - Key-value storage (store, retrieve, list)
-3. **fetch** - Web scraping and HTTP requests
+1. **memory** - Key-value storage (store, retrieve, list)
+2. **fetch** - Web scraping and HTTP requests
+
+**Note**: The filesystem MCP server requires explicit directory configuration for security. See "Configuring MCP Servers" below.
 
 ## Quick Start Testing
 
@@ -117,35 +118,87 @@ This opens a web UI where you can:
 3. Use `mcp_call` to execute tools across multiple servers
 4. Use `llm_call` to synthesize results
 
-## Adding More MCP Servers
+## Configuring MCP Servers
 
-To add more MCP servers, you can:
+### Via Environment Variable
 
-1. **Via Environment Variable** (future feature):
-   ```bash
-   export UER_MCP_CONFIG='{"github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"]}}'
-   ```
+Set `UER_MCP_SERVERS` with JSON configuration:
 
-2. **Via Config File** (future feature):
-   Create `~/.uer/mcp_config.json`:
-   ```json
-   {
-     "servers": {
-       "github": {
-         "command": "npx",
-         "args": ["-y", "@modelcontextprotocol/server-github"],
-         "env": {
-           "GITHUB_PERSONAL_ACCESS_TOKEN": "your-token"
-         }
-       }
-     }
-   }
-   ```
+**Windows (PowerShell)**:
+```powershell
+$env:UER_MCP_SERVERS = '{"filesystem": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\YourName\\Documents"], "transport": "stdio"}}'
+npx uer-mcp@latest
+```
+
+**macOS/Linux (Bash)**:
+```bash
+export UER_MCP_SERVERS='{"filesystem": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/yourname/Documents"], "transport": "stdio"}}'
+npx uer-mcp@latest
+```
+
+**Claude Desktop Configuration**:
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "GEMINI_API_KEY": "your-key-here",
+        "UER_MCP_SERVERS": "{\"filesystem\": {\"command\": \"npx\", \"args\": [\"-y\", \"@modelcontextprotocol/server-filesystem\", \"/Users/yourname/Documents\"], \"transport\": \"stdio\"}}"
+      }
+    }
+  }
+}
+```
+
+### Example Configurations
+
+**Filesystem (with specific directory)**:
+```json
+{
+  "filesystem": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/directory"],
+    "transport": "stdio"
+  }
+}
+```
+
+**GitHub (with authentication)**:
+```json
+{
+  "github": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "your-token"
+    },
+    "transport": "stdio"
+  }
+}
+```
+
+**Multiple Servers**:
+```json
+{
+  "filesystem": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/projects"],
+    "transport": "stdio"
+  },
+  "sqlite": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "/home/user/data.db"],
+    "transport": "stdio"
+  }
+}
+```
 
 ## Popular MCP Servers to Try
 
 ### Official MCP Servers
-- `@modelcontextprotocol/server-filesystem` - File operations ✅ (included)
+- `@modelcontextprotocol/server-filesystem` - File operations (requires configuration)
 - `@modelcontextprotocol/server-memory` - Key-value storage ✅ (included)
 - `@modelcontextprotocol/server-fetch` - HTTP requests ✅ (included)
 - `@modelcontextprotocol/server-sqlite` - SQLite database
