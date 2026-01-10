@@ -6,6 +6,46 @@ This document provides references, local paths, and insight extraction prompts f
 
 ---
 
+## 📊 Detailed Paper Analyses (NEW)
+
+**5 papers systematically analyzed** with comprehensive 12-section framework covering methodology, detection methods, real-world examples, UER integration, risk assessment, and implementation checklists.
+
+### Completed Analyses
+
+1. **[Sharma 2024 - Sycophancy in Language Models](context/summaries/sharma_2024_sycophancy_analysis.md)** (341 lines)
+   - Track 1 & 3 | All major LLMs exhibit systematic sycophancy
+   - Root cause: RLHF training data incentivizes agreement over truthfulness
+   - 4 hackathon project ideas for UER integration
+
+2. **[Park 2024 - AI Deception Survey](context/summaries/park_2024_ai_deception_analysis.md)** (390 lines)
+   - Foundation | Four deception categories, three risk tiers
+   - Examples from CICERO, AlphaStar, LLMs
+   - 5 hackathon project ideas spanning all tracks
+
+3. **[Li 2024 - WMDP Benchmark](context/summaries/li_2024_wmdp_benchmark_analysis.md)** (406 lines)
+   - Track 1 | First public hazardous knowledge benchmark
+   - 3,668 questions across biosecurity, cybersecurity, chemical security
+   - RMU unlearning method demonstrated
+
+4. **[van der Weij 2024 - Sandbagging](context/summaries/vanderweij_2024_sandbagging_analysis.md)** (411 lines)
+   - Track 1 | Strategic underperformance on evaluations
+   - Models can selectively underperform and emulate weaker models
+   - Multi-method detection approach required
+
+5. **[Chen 2024 - AgentVerse](context/summaries/chen_2024_agentverse_analysis.md)** (436 lines)
+   - Track 4 | Multi-agent collaboration and emergent behaviors
+   - Three emergent behaviors: volunteer, conformity, destructive
+   - Critical safety concerns for multi-agent systems
+
+### Synthesis Documents
+
+- **[Consolidated Findings](context/summaries/CONSOLIDATED_FINDINGS.md)** - Cross-cutting themes, detection methods by category, risk assessment matrix, 22 hackathon project ideas, UER integration opportunities
+- **[Analysis Progress](context/summaries/ANALYSIS_PROGRESS.md)** - Detailed progress tracking, extraction issues, statistics
+
+**Total:** 87,375 words processed | 343 chunks | 1,984 analysis lines | **22 hackathon project ideas**
+
+---
+
 # Annotated Bibliography: Chain-of-Thought Manipulation Detection in AI Systems
 
 Chain-of-thought monitoring represents a critical but fragile opportunity for AI safety. This bibliography provides comprehensive citations and summaries for researchers and practitioners building manipulation detection systems, organized by research category.
