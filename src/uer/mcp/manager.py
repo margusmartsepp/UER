@@ -87,11 +87,19 @@ class MCPManager:
             logger.exception(f"MCP operation failed on {server_name}: {e}")
             error_msg = str(e)
             if server_config.transport in ("sse", "http") and "huggingface" in server_name.lower():
-                hf_help = (
-                    " | For Hugging Face MCP: Use url='https://huggingface.co/mcp?login' "
-                    "for OAuth, or url='https://huggingface.co/mcp' with "
-                    "headers={'Authorization': 'Bearer <token>'}"
-                )
+                if "405" in str(e) or "Method Not Allowed" in str(e):
+                    hf_help = (
+                        " | The ?login OAuth flow doesn't work with SSE client. "
+                        "Use token-based auth instead: url='https://huggingface.co/mcp' with "
+                        "headers={'Authorization': 'Bearer <token>'}. "
+                        "Get token from: https://huggingface.co/settings/tokens"
+                    )
+                else:
+                    hf_help = (
+                        " | For Hugging Face MCP: Use url='https://huggingface.co/mcp' with "
+                        "headers={'Authorization': 'Bearer <token>'}. "
+                        "Get token from: https://huggingface.co/settings/tokens"
+                    )
                 error_msg += hf_help
             raise RuntimeError(f"MCP operation failed on {server_name}: {error_msg}") from e
 
