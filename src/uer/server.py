@@ -16,6 +16,7 @@ from uer.mcp.manager import MCPManager
 from uer.models.llm import LLMCallRequest
 from uer.storage import StorageManager
 from uer.tools import skills_tools, storage_tools, template_tools
+from uer.tools.delegate import DelegateToolHandler
 
 # Configure logging
 logging.basicConfig(
@@ -39,6 +40,9 @@ if storage_manager.is_available():
     logger.info("Storage backend enabled")
 else:
     logger.info("Storage backend disabled - storage/skills/template tools will not be available")
+
+# Initialize delegate tool handler for multi-agent orchestration
+delegate_handler = DelegateToolHandler(gateway=gateway, storage=storage_manager)
 
 
 @app.list_tools()
@@ -277,6 +281,8 @@ async def list_tools() -> list[Tool]:
                 "required": ["operation"],
             },
         ),
+        # Delegate tool for multi-agent orchestration
+        delegate_handler.get_tool_definition(),
     ]
 
     # Conditionally add storage-dependent tools
@@ -320,6 +326,9 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await handle_mcp_registry(arguments)
     elif name == "mcp_servers":
         return await handle_mcp_servers(arguments)
+    # Delegate tool for multi-agent orchestration
+    elif name == "delegate":
+        return await delegate_handler.handle(arguments)
     # Storage tools
     elif name == "storage_put":
         return await storage_tools.storage_put(arguments)
