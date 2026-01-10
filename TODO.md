@@ -284,50 +284,80 @@
 
 ---
 
-## Phase 3: MCP Client Integration (Day 1 Evening) ⏱️ 3 hours
+## Phase 3: MCP Client Integration (Day 1 Evening) ✅ COMPLETE
 
-### LiteLLM MCP Client Setup
-- [ ] Create `src/mcp/__init__.py`
-- [ ] Create `src/mcp/client.py`:
-  ```python
-  from litellm import experimental_mcp_client
+### Core MCP Infrastructure
+- [x] Create `src/mcp/__init__.py`
+- [x] Create `src/mcp/config.py` with MCPServerConfig and MCPConfig models
+- [x] Create `src/mcp/manager.py` with MCPManager for connection handling
+- [x] Use native MCP Python SDK (not LiteLLM experimental)
+- [x] Implement fresh connections per request (avoid async context issues)
 
-  class MCPClient:
-      async def connect(self, server_config: dict)
-      async def list_tools(self, server: str) -> list
-      async def call_tool(self, server: str, tool: str, args: dict) -> dict
-  ```
+### Transport Support
+- [x] **stdio transport** - Local subprocess communication (npx, uvx, python)
+- [x] **SSE transport** - Server-Sent Events over HTTP for remote servers
+- [x] **HTTP transport** - HTTP POST/GET requests for remote servers
+- [x] Add URL field for HTTP/SSE endpoints
+- [x] Add headers field for authentication (Bearer tokens, API keys)
 
 ### MCP Configuration
-- [ ] Create `config/litellm_config.yaml`:
-  ```yaml
-  mcp_servers:
-    filesystem:
-      transport: "stdio"
-      command: "npx"
-      args: ["-y", "@modelcontextprotocol/server-filesystem", "."]
-  ```
-- [ ] Load config in gateway
+- [x] Environment variable support: `UER_MCP_SERVERS`
+- [x] Default servers: memory (npm), fetch (Python via uvx)
+- [x] Filesystem server disabled by default (requires explicit directory config)
+- [x] Support for both npm (npx) and Python (uvx) MCP servers
 
-### mcp_call Tool
-- [ ] Create `src/tools/mcp_call.py`:
-  ```python
-  @tool
-  async def mcp_call(server: str, tool: str, args: dict = None) -> MCPResult
-  ```
-- [ ] Register in server.py
-- [ ] Test:
-  - [ ] List tools from filesystem MCP
-  - [ ] Call `read_file`
-  - [ ] Call `list_directory`
+### MCP Tools (Exposed to LLM)
+- [x] **mcp_call** - Call tools on external MCP servers
+- [x] **mcp_list_tools** - List available tools from MCP servers
+  - [x] List all configured servers (no parameters)
+  - [x] Filter servers by prefix (e.g., 'hug' matches 'huggingface')
+  - [x] List tools from specific server
+- [x] **mcp_servers** - Full CRUD operations for server management
+  - [x] list - View all configured servers
+  - [x] get - View single server configuration
+  - [x] add - Add new MCP servers
+  - [x] update - Modify existing servers
+  - [x] delete - Remove servers
+- [x] **mcp_registry** - Browse and install from official MCP registry
+  - [x] search - Find servers by keyword
+  - [x] list - Browse all 300+ servers
+  - [x] get - View server details
+  - [x] install - Add server from registry to config
 
-### Optional: Context7 Integration
-- [ ] Add context7 to config (if available)
-- [ ] Test documentation queries
+### Authentication & Security
+- [x] Token-based authentication for remote servers
+- [x] OAuth guidance for direct MCP clients
+- [x] Helpful error messages for authentication failures
+- [x] Support for Hugging Face MCP server with Bearer tokens
+- [x] Clear guidance when 405 Method Not Allowed occurs
+
+### Server Discovery & Error Handling
+- [x] Server discovery without requiring server name
+- [x] Prefix filtering for efficient server search
+- [x] Show available servers in error messages
+- [x] Validation: command required for stdio, url required for sse/http
+- [x] Detailed error logging with helpful suggestions
+
+### Testing & Documentation
+- [x] Test with memory MCP server (npm)
+- [x] Test with fetch MCP server (Python)
+- [x] Create MCP_TESTING.md with comprehensive guide
+- [x] Document environment variable configuration
+- [x] Document CRUD operations with examples
+- [x] Document SSE/HTTP transport setup
+- [x] Document authentication methods
+
+### Beyond Original Plan
+- [x] Full CRUD instead of just read-only access
+- [x] Registry integration for easy server discovery
+- [x] SSE/HTTP transport (original plan only had stdio)
+- [x] Server discovery and filtering
+- [x] Dynamic server configuration (not just static config file)
+- [x] Support for both npm and Python MCP ecosystems
 
 ---
 
-## Phase 4: Subagent Delegation (Day 2 Morning) ⏱️ 3 hours
+## Phase 4: Subagent Delegation (Future) ⏱️ 3 hours
 
 ### Chat History Builder
 - [ ] Create `src/orchestration/__init__.py`
