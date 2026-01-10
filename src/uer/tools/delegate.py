@@ -74,6 +74,34 @@ class DelegateToolHandler:
                         ),
                         "items": {"type": "string"},
                     },
+                    "context_template": {
+                        "type": "string",
+                        "description": (
+                            "Optional Jinja2 template for dynamic context assembly. "
+                            "Can be a template string or URI to template in storage. "
+                            "Supports filters: {{ uri | expand }}, "
+                            "{{ text | truncate_tokens(500) }}, {{ text | summarize(10) }}, "
+                            "{{ uri | fetch('default') }}. "
+                            "Example: 'Analysis of {{ context_0 | summarize(5) }}\\n\\n"
+                            '{{ "s3://data.txt" | expand }}\''
+                        ),
+                    },
+                    "context_variables": {
+                        "type": "object",
+                        "description": (
+                            "Variables to inject into context template. "
+                            "Context refs are automatically available as "
+                            "context_0, context_1, etc. "
+                            "Example: {'project': 'UER', 'date': '2026-01-11'}"
+                        ),
+                    },
+                    "max_context_tokens": {
+                        "type": "integer",
+                        "description": (
+                            "Optional token limit for context truncation (approximate). "
+                            "Useful for staying within model context windows."
+                        ),
+                    },
                     "store_result": {
                         "type": "string",
                         "description": (
@@ -112,6 +140,9 @@ class DelegateToolHandler:
         messages = arguments.get("messages")
         tools = arguments.get("tools")
         context_refs = arguments.get("context_refs")
+        context_template = arguments.get("context_template")
+        context_variables = arguments.get("context_variables")
+        max_context_tokens = arguments.get("max_context_tokens")
         store_result = arguments.get("store_result")
         max_iterations = arguments.get("max_iterations", 10)
         agent_id = arguments.get("agent_id")
@@ -122,12 +153,15 @@ class DelegateToolHandler:
         if not messages:
             messages = [{"role": "user", "content": task}]
 
-        # Delegate to subagent
+        # Delegate to subagent with enhanced context assembly
         result: DelegationResult = await self.orchestrator.delegate(
             model=model,
             messages=messages,
             tools=tools,
             context_refs=context_refs,
+            context_template=context_template,
+            context_variables=context_variables,
+            max_context_tokens=max_context_tokens,
             store_result=store_result,
             max_iterations=max_iterations,
             agent_id=agent_id,
