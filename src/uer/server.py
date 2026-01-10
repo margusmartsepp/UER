@@ -143,19 +143,24 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="mcp_list_tools",
             description=(
-                "List all available tools from an MCP server. "
-                f"Available servers: {', '.join(mcp_servers) or 'none'}. "
-                "Returns tool names, descriptions, and input schemas."
+                "List available MCP servers and their tools. "
+                "Omit 'server' to list all configured servers. "
+                "Provide 'server' name to list tools from that specific server. "
+                "Use 'prefix' to filter servers by name prefix (e.g., 'hug' matches 'huggingface')."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
                     "server": {
                         "type": "string",
-                        "description": f"MCP server name. Available: {', '.join(mcp_servers)}",
-                    }
+                        "description": "MCP server name (optional - omit to list all servers)",
+                    },
+                    "prefix": {
+                        "type": "string",
+                        "description": "Filter servers by name prefix (optional)",
+                    },
                 },
-                "required": ["server"],
+                "required": [],
             },
         ),
         Tool(
@@ -346,16 +351,36 @@ async def handle_mcp_list_tools(arguments: Any) -> Sequence[TextContent]:
     """Handle mcp_list_tools tool invocation."""
     try:
         server = arguments.get("server")
+        prefix = arguments.get("prefix")
+
+        # List all servers or filter by prefix
         if not server:
+            available_servers = mcp_manager.list_servers()
+
+            # Apply prefix filter if provided
+            if prefix:
+                available_servers = [
+                    s for s in available_servers if s.lower().startswith(prefix.lower())
+                ]
+                logger.info(f"Filtered {len(available_servers)} servers with prefix '{prefix}'")
+            else:
+                logger.info(f"Listing all {len(available_servers)} configured MCP servers")
+
             return [
                 TextContent(
                     type="text",
                     text=json.dumps(
-                        {"error": "Missing required parameter", "message": "server is required"}
+                        {
+                            "operation": "list_servers",
+                            "servers": available_servers,
+                            "count": len(available_servers),
+                        },
+                        indent=2,
                     ),
                 )
             ]
 
+        # List tools from specific server
         logger.info(f"Listing tools from MCP server: {server}")
         tools = await mcp_manager.list_tools(server)
 
@@ -364,6 +389,27 @@ async def handle_mcp_list_tools(arguments: Any) -> Sequence[TextContent]:
             TextContent(type="text", text=json.dumps({"server": server, "tools": tools}, indent=2))
         ]
 
+    except ValueError as e:
+        # Server not found - show available servers
+        available_servers = mcp_manager.list_servers()
+        error_msg = str(e)
+        if available_servers:
+            error_msg += f". Available servers: {', '.join(available_servers)}"
+        else:
+            error_msg += ". No MCP servers configured. Use mcp_servers tool to add servers."
+        logger.error(f"MCP list_tools failed: {error_msg}")
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps(
+                    {
+                        "error": "Server not found",
+                        "message": error_msg,
+                        "available_servers": available_servers,
+                    }
+                ),
+            )
+        ]
     except RuntimeError as e:
         logger.error(f"MCP list_tools failed: {str(e)}")
         return [
