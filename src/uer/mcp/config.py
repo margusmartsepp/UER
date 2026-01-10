@@ -95,8 +95,8 @@ class MCPConfig(BaseModel):
                 ),
                 "fetch": MCPServerConfig(
                     name="fetch",
-                    command="npx",
-                    args=["-y", "@modelcontextprotocol/server-fetch"],
+                    command="uvx",
+                    args=["mcp-server-fetch"],
                     transport="stdio",
                     headers={},
                 ),
