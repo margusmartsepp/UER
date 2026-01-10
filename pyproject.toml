@@ -72,6 +72,7 @@ ignore = []
 "seed_datasets.py" = ["E501"]  # Allow long lines in setup script
 "src/uer/models/*.py" = ["E501", "N805"]  # Allow long lines in descriptions, Pydantic validators use cls
 "src/uer/server.py" = ["E501"]  # Allow long lines in tool descriptions
+"src/uer/storage/*.py" = ["B904"]  # Allow exception transformation without 'from' in storage backends
 
 [tool.mypy]
 python_version = "3.11"
