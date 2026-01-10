@@ -236,51 +236,304 @@
 
 ---
 
-## Phase 2: Storage & Context (Day 1 Afternoon) ⏱️ 3 hours
+## Phase 2: S3-Native Storage & Context (Day 1 Afternoon) ⏱️ 7 hours
 
-### Storage Backend
-- [ ] Create `src/storage/__init__.py`
-- [ ] Create `src/storage/base.py`:
+> **Architecture:** S3-compatible storage with MinIO (local), Skills API compliance, Jinja2 templates
+> **Reference:** [docs/ADR-002-S3-Storage-Architecture.md](docs/ADR-002-S3-Storage-Architecture.md)
+
+### Phase 2a: Core S3 Storage (3 hours)
+
+**Goal:** S3-compatible storage with local MinIO backend
+
+#### Storage Backend Interface
+- [ ] Create `src/uer/storage/__init__.py`
+- [ ] Create `src/uer/storage/base.py`:
   ```python
   from typing import Protocol
+  from datetime import datetime
+  from enum import Enum
+
+  class RetentionMode(Enum):
+      GOVERNANCE = "GOVERNANCE"
+      COMPLIANCE = "COMPLIANCE"
+
+  class Retention:
+      mode: RetentionMode
+      retain_until_date: datetime
+
+  class ObjectMetadata:
+      bucket: str
+      key: str
+      size: int
+      content_type: str
+      last_modified: datetime
+      etag: str
+      version_id: str | None = None
+      metadata: dict[str, str] = {}
 
   class StorageBackend(Protocol):
-      async def put(self, uri: str, data: dict) -> BlobMetadata
-      async def get(self, uri: str, query: str = None) -> Blob | None
-      async def delete(self, uri: str) -> bool
-      async def search(self, pattern: str) -> list[BlobMetadata]
+      async def put_object(bucket, key, data, content_type, metadata) -> ObjectMetadata
+      async def get_object(bucket, key) -> tuple[bytes, ObjectMetadata]
+      async def delete_object(bucket, key) -> bool
+      async def list_objects(bucket, prefix, recursive) -> list[ObjectMetadata]
+      async def object_exists(bucket, key) -> bool
+      async def set_object_retention(bucket, key, retention) -> None  # Optional
   ```
-- [ ] Create `src/storage/local.py`:
-  - [ ] SQLite for metadata: `blobs(uri, type, created_at, updated_at, metadata_json)`
-  - [ ] Filesystem for large content: `~/.universal-registry/blobs/{hash}`
-  - [ ] Implement all methods
+- [ ] Document interface with examples
 
-### Data Models
-- [ ] Create `src/models/__init__.py`
-- [ ] Create `src/models/blob.py`:
+#### MinIO Backend Implementation
+- [ ] Create `src/uer/storage/minio_backend.py`
+- [ ] Initialize MinIO client from environment (MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_SECURE)
+- [ ] Implement `put_object` with content type and metadata support
+- [ ] Implement `get_object` returning data + metadata
+- [ ] Implement `delete_object`
+- [ ] Implement `list_objects` with prefix filtering and recursive option
+- [ ] Implement `object_exists` helper
+- [ ] Add connection pooling and error handling
+- [ ] Auto-create default buckets: `uer-context`, `uer-skills`, `uer-templates`
+
+#### Storage Manager
+- [ ] Create `src/uer/storage/manager.py`
+- [ ] URI parsing: `registry://type/key` → `s3://uer-{type}/key`
+- [ ] URI parsing: `s3://bucket/key` → `(bucket, key)`
+- [ ] Convenience methods wrapping backend
+- [ ] Bucket creation on startup
+
+#### Environment Configuration
+- [ ] Add MinIO config to `.env.example`:
+  ```bash
+  # Storage Backend (MinIO for local development)
+  STORAGE_BACKEND=minio
+  MINIO_ENDPOINT=localhost:9000
+  MINIO_ACCESS_KEY=minioadmin
+  MINIO_SECRET_KEY=minioadmin
+  MINIO_SECURE=false
+  ```
+- [ ] Create `docker-compose.yml` for MinIO:
+  ```yaml
+  services:
+    minio:
+      image: minio/minio:latest
+      command: server /data --console-address ":9001"
+      ports:
+        - "9000:9000"  # S3 API
+        - "9001:9001"  # Web Console
+      environment:
+        MINIO_ROOT_USER: minioadmin
+        MINIO_ROOT_PASSWORD: minioadmin
+      volumes:
+        - ./data/minio:/data
+  ```
+- [ ] Document MinIO setup in README (one-command: `docker-compose up -d`)
+
+#### Testing
+- [ ] Test MinIO connection
+- [ ] Test bucket creation
+- [ ] Test put/get/delete operations
+- [ ] Test prefix filtering (list skills, list contexts)
+- [ ] Test error handling (bucket not found, object not found, connection failed)
+
+---
+
+### Phase 2b: Skills & Templates (2 hours)
+
+**Goal:** Claude Skills API compliance + Jinja2 template expansion
+
+#### Skills Manager
+- [ ] Create `src/uer/storage/skills.py`
+- [ ] `create_skill(name, display_title, files: dict[str, bytes])` → SkillMetadata
+  - [ ] Validate SKILL.md exists in files
+  - [ ] Store all files under `s3://uer-skills/{name}/`
+  - [ ] Store metadata in `s3://uer-skills/{name}/.metadata.json`
+- [ ] `get_skill(name)` → Skill with all files
+- [ ] `list_skills()` → list of skill names
+- [ ] `export_for_api(name)` → Claude Skills API format
   ```python
-  class BlobType(Enum):
-      DATA = "data"
-      PLAN = "plan"
-      RESULT = "result"
-      HISTORY = "history"
+  return {
+      "display_title": "Financial Analysis",
+      "files": [
+          {"filename": "SKILL.md", "content": b"..."},
+          {"filename": "scripts/analyze.py", "content": b"..."}
+      ]
+  }
+  ```
+- [ ] `to_system_prompt(name)` → Convert skill to system prompt for GPT/Gemini
 
-  class Blob(BaseModel):
-      uri: str
-      type: BlobType
-      data: dict
-      created_at: datetime
-      version: int
+#### Template Manager
+- [ ] Create `src/uer/storage/templates.py`
+- [ ] Create `S3TemplateLoader(BaseLoader)` for Jinja2
+  - [ ] Load templates from S3 storage
+  - [ ] Cache templates for performance
+- [ ] Create `TemplateManager` class
+  - [ ] Initialize Jinja2 Environment with S3TemplateLoader
+  - [ ] Add custom filter: `expand` - `{{ uri | expand }}` → load content from S3
+  - [ ] Add custom filter: `s3` - `{{ key | s3 }}` → load from default bucket
+- [ ] `render(template_key, context)` → rendered content
+- [ ] Support async template rendering
+
+#### Testing
+- [ ] Create test skill with SKILL.md + Python script
+- [ ] Store skill via `create_skill`
+- [ ] Retrieve skill via `get_skill`
+- [ ] Export skill for Claude API
+- [ ] Create Jinja2 template with `expand` filter
+- [ ] Render template with context from S3
+
+---
+
+### Phase 2c: MCP Tools (2 hours)
+
+**Goal:** Expose S3 storage to LLMs via MCP tools
+
+#### Storage Tools
+- [ ] Create `src/uer/tools/storage_tools.py`
+- [ ] `storage_put(uri, content, content_type, metadata)` → ObjectMetadata
+  ```python
+  @tool
+  async def storage_put(
+      uri: str,  # "s3://bucket/key" or "registry://type/key"
+      content: str | bytes,
+      content_type: str = "application/octet-stream",
+      metadata: dict = None
+  ) -> dict:
+      """Store content at URI in S3-compatible storage."""
+  ```
+- [ ] `storage_get(uri)` → content + metadata
+  ```python
+  @tool
+  async def storage_get(uri: str) -> dict:
+      """Retrieve content from URI."""
+      # Returns: {"content": "...", "metadata": {...}}
+  ```
+- [ ] `storage_list(prefix, recursive)` → list of objects
+  ```python
+  @tool
+  async def storage_list(
+      prefix: str = "",  # "s3://bucket/prefix/" or "registry://skills/"
+      recursive: bool = True
+  ) -> list[dict]:
+      """List objects under prefix."""
+  ```
+- [ ] `storage_delete(uri)` → success boolean
+  ```python
+  @tool
+  async def storage_delete(uri: str) -> dict:
+      """Delete object at URI."""
   ```
 
-### MCP Tools: CRUD
-- [ ] Create `src/tools/__init__.py`
-- [ ] Create `src/tools/crud.py`:
-  - [ ] `put(uri, data, ttl_hours=None)` → Store blob
-  - [ ] `get(uri, query=None)` → Retrieve blob (JSONPath optional)
-  - [ ] `search(pattern, type="all")` → Find blobs
-- [ ] Register tools in server.py
+#### Skills Tools
+- [ ] `skill_create(name, display_title, skill_md, files)` → SkillMetadata
+  ```python
+  @tool
+  async def skill_create(
+      name: str,
+      display_title: str,
+      skill_md: str,
+      files: dict = None  # {"scripts/analyze.py": "content", ...}
+  ) -> dict:
+      """Create Claude Skill in storage."""
+  ```
+- [ ] `skill_get(name)` → Skill with all files
+- [ ] `skill_list()` → list of available skills
+- [ ] `skill_export(name)` → Claude Skills API format
+
+#### Template Tools
+- [ ] `template_render(template_uri, context)` → rendered content
+  ```python
+  @tool
+  async def template_render(
+      template_uri: str,  # "s3://uer-templates/meeting-notes.md"
+      context: dict  # {"meeting": {"title": "...", "date": "..."}}
+  ) -> dict:
+      """Render Jinja2 template with context expansion."""
+  ```
+- [ ] `template_list()` → available templates
+
+#### Register in Server
+- [ ] Add all storage tools to `src/uer/server.py`
+- [ ] Update tool schemas with comprehensive examples
+- [ ] Add error handling for all tools
+- [ ] Document each tool in tool description
+
+#### Testing
 - [ ] Test with Claude Desktop
+- [ ] Store context via `storage_put` MCP tool
+- [ ] Retrieve context via `storage_get` MCP tool
+- [ ] List objects via `storage_list` MCP tool
+- [ ] Create skill via `skill_create` MCP tool
+- [ ] Render template via `template_render` MCP tool
+- [ ] Verify Jinja2 `expand` filter works (loads from S3)
+
+---
+
+### Phase 2d: Advanced Features (Optional, 2 hours)
+
+**Goal:** WORM compliance, versioning, multi-backend support
+
+#### WORM/Compliance Support
+- [ ] Add `set_object_retention` to MinIO backend
+  ```python
+  async def set_object_retention(
+      bucket: str,
+      key: str,
+      retention: Retention
+  ) -> None:
+      """Set WORM retention (requires bucket created with object_lock=True)."""
+  ```
+- [ ] Add `get_object_retention` to MinIO backend
+- [ ] Create `storage_set_retention` MCP tool (admin-only)
+  ```python
+  @tool
+  async def storage_set_retention(
+      uri: str,
+      mode: Literal["GOVERNANCE", "COMPLIANCE"],
+      retain_days: int
+  ) -> dict:
+      """Set WORM retention on object (MinIO/S3 only)."""
+  ```
+- [ ] Document compliance use cases (legal docs, audit logs, ML versioning)
+- [ ] Test retention settings with MinIO
+
+#### Versioning Support
+- [ ] Document how to enable versioning in MinIO bucket config
+  ```bash
+  # mc version enable minio/uer-context
+  ```
+- [ ] Add `version_id` to ObjectMetadata (already in base.py)
+- [ ] Add `get_object_version(bucket, key, version_id)` method
+- [ ] Add `list_object_versions(bucket, key)` method
+- [ ] Test versioning with MinIO
+
+#### Multi-Backend Support (Future)
+- [ ] Create `src/uer/storage/s3_backend.py` for AWS S3
+  ```python
+  class S3Backend(StorageBackend):
+      """AWS S3 backend using boto3."""
+      # Same interface as MinIO, different implementation
+  ```
+- [ ] Create `src/uer/storage/azure_backend.py` for Azure Blob
+- [ ] Add backend factory in `manager.py`
+  ```python
+  def get_storage_backend() -> StorageBackend:
+      backend_type = os.getenv("STORAGE_BACKEND", "minio")
+      if backend_type == "minio":
+          return MinIOBackend()
+      elif backend_type == "s3":
+          return S3Backend()
+      elif backend_type == "azure":
+          return AzureBlobBackend()
+  ```
+- [ ] Document configuration for each backend in README
+
+---
+
+### Documentation Updates
+- [ ] Update README.md with MinIO setup instructions
+- [ ] Add S3 URI examples (`s3://bucket/key`, `registry://type/key`)
+- [ ] Document Skills API compliance
+- [ ] Document Jinja2 template system with examples
+- [ ] Add WORM/compliance use cases
+- [ ] Reference ADR-002 in README
 
 ---
 

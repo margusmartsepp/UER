@@ -86,8 +86,8 @@ graph TB
         end
 
         subgraph store["Context Store"]
-            D1["Local: SQLite"]
-            D2["Cloud: Firebase"]
+            D1["Local: MinIO"]
+            D2["Cloud: AWS S3, Azure, NetApp"]
         end
 
         B --> litellm
@@ -166,22 +166,29 @@ mcp_call(server="context7", tool="search", args={"query": "LiteLLM API reference
 Store data externally, pass URI references:
 
 ```python
-# Store large document (200k tokens)
-put("registry://context/doc_001", {"content": large_document})
+# Store large document (200k tokens) in S3-compatible storage
+put("s3://uer-context/analysis/doc_001.json", {"content": large_document})
 
 # Pass only URI to subagent (50 tokens!)
 delegate(
     model="anthropic/claude-sonnet-4-5-20250929",
     task="Analyze the document",
-    context_refs=["registry://context/doc_001"]
+    context_refs=["s3://uer-context/analysis/doc_001.json"]
 )
 
-# Subagent retrieves full content from registry
-# Result stored back to registry
+# Subagent retrieves full content from storage
+# Result stored back to S3
 # Parent retrieves summary only
 ```
 
 **Token savings: 99.9%** for multi-agent workflows.
+
+**Storage backends:**
+- **Local:** MinIO (S3-compatible, Docker-based)
+- **Cloud:** AWS S3, Azure Blob Storage, NetApp StorageGRID
+- **Features:** Versioning, WORM compliance, Jinja2 templates, Claude Skills API support
+
+See [docs/ADR-002-S3-Storage-Architecture.md](docs/ADR-002-S3-Storage-Architecture.md) for details.
 
 ### 4. Full Chat History for Subagents
 
@@ -331,15 +338,19 @@ UER/
 │   ├── mcp/
 │   │   └── client.py      # MCP client for calling other servers
 │   ├── storage/
-│   │   ├── base.py        # Storage protocol
-│   │   └── local.py       # SQLite + filesystem
+│   │   ├── base.py        # S3-compatible storage protocol
+│   │   ├── minio_backend.py  # MinIO backend (local)
+│   │   ├── s3_backend.py     # AWS S3 backend (cloud)
+│   │   ├── manager.py        # Storage manager
+│   │   ├── skills.py         # Claude Skills API support
+│   │   └── templates.py      # Jinja2 template rendering
 │   ├── tools/
 │   │   ├── llm_call.py    # LLM invocation tool
 │   │   ├── mcp_call.py    # MCP tool invocation
-│   │   ├── crud.py        # put/get/search
+│   │   ├── storage_tools.py  # put/get/list/delete
 │   │   └── delegate.py    # Subagent delegation
 │   └── models/
-│       ├── context.py     # Context/blob schemas
+│       ├── storage.py     # Storage schemas (ObjectMetadata, Retention)
 │       └── message.py     # Chat message schemas
 │
 └── config/
