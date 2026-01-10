@@ -159,48 +159,48 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="mcp_configure",
+            name="mcp_servers",
             description=(
-                "Add or update an MCP server configuration. "
-                "Use this to enable filesystem access, add GitHub integration, etc. "
-                "Common servers: filesystem (needs directory path), sqlite (needs db path), "
-                "github (needs token), puppeteer, brave-search, google-maps."
+                "Manage MCP server configurations (CRUD operations). "
+                "Use 'list' to see all servers, 'get' to view one server, "
+                "'add' to create new servers, 'update' to modify existing ones, "
+                "'delete' to remove servers. "
+                "Use the fetch tool first to look up MCP server requirements from npm or GitHub."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
+                    "operation": {
+                        "type": "string",
+                        "enum": ["list", "get", "add", "update", "delete"],
+                        "description": "CRUD operation to perform",
+                    },
+                    "servers": {
+                        "type": "object",
+                        "description": (
+                            "Map of server configurations for 'add' or 'update' operations. "
+                            "Each key is the server name, value is the config. "
+                            "Example: {'filesystem': {'command': 'npx', 'args': ['-y', '@modelcontextprotocol/server-filesystem', '/path']}}"
+                        ),
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "command": {"type": "string"},
+                                "args": {"type": "array", "items": {"type": "string"}},
+                                "env": {
+                                    "type": "object",
+                                    "additionalProperties": {"type": "string"},
+                                },
+                                "transport": {"type": "string", "default": "stdio"},
+                            },
+                        },
+                    },
                     "server_name": {
                         "type": "string",
-                        "description": "Unique name for the MCP server (e.g., 'filesystem', 'github')",
-                    },
-                    "command": {
-                        "type": "string",
-                        "description": "Command to execute (usually 'npx' for npm packages)",
-                        "default": "npx",
-                    },
-                    "args": {
-                        "type": "array",
-                        "description": (
-                            "Command arguments. For filesystem: "
-                            "['-y', '@modelcontextprotocol/server-filesystem', '/path/to/directory']. "
-                            "For github: ['-y', '@modelcontextprotocol/server-github']"
-                        ),
-                        "items": {"type": "string"},
-                    },
-                    "env": {
-                        "type": "object",
-                        "description": "Environment variables (e.g., {'GITHUB_PERSONAL_ACCESS_TOKEN': 'token'})",
-                        "additionalProperties": {"type": "string"},
-                        "default": {},
-                    },
-                    "transport": {
-                        "type": "string",
-                        "description": "Transport type (currently only 'stdio' is supported)",
-                        "default": "stdio",
-                        "enum": ["stdio"],
+                        "description": "Server name for 'get' or 'delete' operations",
                     },
                 },
-                "required": ["server_name", "args"],
+                "required": ["operation"],
             },
         ),
     ]
@@ -215,8 +215,8 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await handle_mcp_call(arguments)
     elif name == "mcp_list_tools":
         return await handle_mcp_list_tools(arguments)
-    elif name == "mcp_configure":
-        return await handle_mcp_configure(arguments)
+    elif name == "mcp_servers":
+        return await handle_mcp_servers(arguments)
     else:
         raise ValueError(f"Unknown tool: {name}")
 
@@ -369,62 +369,243 @@ async def handle_mcp_call(arguments: Any) -> Sequence[TextContent]:
         ]
 
 
-async def handle_mcp_configure(arguments: Any) -> Sequence[TextContent]:
-    """Handle mcp_configure tool invocation."""
+async def handle_mcp_servers(arguments: Any) -> Sequence[TextContent]:
+    """Handle mcp_servers CRUD operations."""
     try:
-        server_name = arguments.get("server_name")
-        command = arguments.get("command", "npx")
-        args = arguments.get("args")
-        env = arguments.get("env", {})
-        transport = arguments.get("transport", "stdio")
+        operation = arguments.get("operation")
 
-        if not server_name or not args:
+        if not operation:
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {"error": "Missing required parameter", "message": "operation is required"}
+                    ),
+                )
+            ]
+
+        # LIST operation
+        if operation == "list":
+            servers_info = {}
+            for name, config in mcp_manager.config.servers.items():
+                servers_info[name] = {
+                    "command": config.command,
+                    "args": config.args,
+                    "env": config.env,
+                    "transport": config.transport,
+                }
+
+            logger.info(f"Listed {len(servers_info)} MCP servers")
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps({"operation": "list", "servers": servers_info}, indent=2),
+                )
+            ]
+
+        # GET operation
+        elif operation == "get":
+            server_name = arguments.get("server_name")
+            if not server_name:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": "Missing parameter",
+                                "message": "server_name required for get",
+                            }
+                        ),
+                    )
+                ]
+
+            if server_name not in mcp_manager.config.servers:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Not found", "message": f"Server '{server_name}' not found"}
+                        ),
+                    )
+                ]
+
+            config = mcp_manager.config.servers[server_name]
             return [
                 TextContent(
                     type="text",
                     text=json.dumps(
                         {
-                            "error": "Missing required parameters",
-                            "message": "server_name and args are required",
-                        }
+                            "operation": "get",
+                            "server_name": server_name,
+                            "config": {
+                                "command": config.command,
+                                "args": config.args,
+                                "env": config.env,
+                                "transport": config.transport,
+                            },
+                        },
+                        indent=2,
                     ),
                 )
             ]
 
-        logger.info(f"Configuring MCP server: {server_name}")
+        # ADD operation
+        elif operation == "add":
+            servers = arguments.get("servers", {})
+            if not servers:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Missing parameter", "message": "servers required for add"}
+                        ),
+                    )
+                ]
 
-        # Add server to manager's config
-        from uer.mcp.config import MCPServerConfig
+            from uer.mcp.config import MCPServerConfig
 
-        new_server = MCPServerConfig(
-            name=server_name, command=command, args=args, env=env, transport=transport
-        )
+            added = []
+            errors = []
 
-        mcp_manager.config.servers[server_name] = new_server
+            for name, config in servers.items():
+                if name in mcp_manager.config.servers:
+                    errors.append(f"Server '{name}' already exists (use 'update' to modify)")
+                    continue
 
-        logger.info(f"Successfully configured MCP server: {server_name}")
-        return [
-            TextContent(
-                type="text",
-                text=json.dumps(
-                    {
-                        "success": True,
-                        "message": f"MCP server '{server_name}' configured successfully",
-                        "server": {
-                            "name": server_name,
-                            "command": command,
-                            "args": args,
-                            "env": env,
-                            "transport": transport,
+                try:
+                    new_server = MCPServerConfig(
+                        name=name,
+                        command=config.get("command", "npx"),
+                        args=config.get("args", []),
+                        env=config.get("env", {}),
+                        transport=config.get("transport", "stdio"),
+                    )
+                    mcp_manager.config.servers[name] = new_server
+                    added.append(name)
+                    logger.info(f"Added MCP server: {name}")
+                except Exception as e:
+                    errors.append(f"Failed to add '{name}': {str(e)}")
+
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "operation": "add",
+                            "added": added,
+                            "errors": errors if errors else None,
                         },
-                    },
-                    indent=2,
-                ),
-            )
-        ]
+                        indent=2,
+                    ),
+                )
+            ]
+
+        # UPDATE operation
+        elif operation == "update":
+            servers = arguments.get("servers", {})
+            if not servers:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Missing parameter", "message": "servers required for update"}
+                        ),
+                    )
+                ]
+
+            from uer.mcp.config import MCPServerConfig
+
+            updated = []
+            errors = []
+
+            for name, config in servers.items():
+                if name not in mcp_manager.config.servers:
+                    errors.append(f"Server '{name}' not found (use 'add' to create)")
+                    continue
+
+                try:
+                    new_server = MCPServerConfig(
+                        name=name,
+                        command=config.get("command", "npx"),
+                        args=config.get("args", []),
+                        env=config.get("env", {}),
+                        transport=config.get("transport", "stdio"),
+                    )
+                    mcp_manager.config.servers[name] = new_server
+                    updated.append(name)
+                    logger.info(f"Updated MCP server: {name}")
+                except Exception as e:
+                    errors.append(f"Failed to update '{name}': {str(e)}")
+
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "operation": "update",
+                            "updated": updated,
+                            "errors": errors if errors else None,
+                        },
+                        indent=2,
+                    ),
+                )
+            ]
+
+        # DELETE operation
+        elif operation == "delete":
+            server_name = arguments.get("server_name")
+            if not server_name:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": "Missing parameter",
+                                "message": "server_name required for delete",
+                            }
+                        ),
+                    )
+                ]
+
+            if server_name not in mcp_manager.config.servers:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Not found", "message": f"Server '{server_name}' not found"}
+                        ),
+                    )
+                ]
+
+            del mcp_manager.config.servers[server_name]
+            logger.info(f"Deleted MCP server: {server_name}")
+
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "operation": "delete",
+                            "deleted": server_name,
+                            "message": f"Server '{server_name}' deleted successfully",
+                        },
+                        indent=2,
+                    ),
+                )
+            ]
+
+        else:
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {"error": "Invalid operation", "message": f"Unknown operation: {operation}"}
+                    ),
+                )
+            ]
 
     except Exception as e:
-        logger.exception(f"Unexpected error in mcp_configure: {str(e)}")
+        logger.exception(f"Unexpected error in mcp_servers: {str(e)}")
         return [
             TextContent(
                 type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
