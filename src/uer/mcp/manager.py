@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from mcp import ClientSession, StdioServerParameters
+from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
 
 from uer.mcp.config import MCPConfig
@@ -27,36 +28,61 @@ class MCPManager:
         """Execute an operation with a fresh MCP connection.
 
         This creates a new connection for each operation to avoid async context issues.
+        Supports stdio, sse, and http transports.
         """
         if server_name not in self.config.servers:
             raise ValueError(f"Unknown MCP server: {server_name}")
 
         server_config = self.config.servers[server_name]
-
-        if server_config.transport != "stdio":
-            raise NotImplementedError(f"Transport {server_config.transport} not yet supported")
-
-        # Create server parameters
-        server_params = StdioServerParameters(
-            command=server_config.command,
-            args=server_config.args,
-            env=server_config.env if server_config.env else None,
-        )
-
-        logger.info(f"Connecting to MCP server: {server_name}")
+        logger.info(f"Connecting to MCP server: {server_name} via {server_config.transport}")
 
         try:
-            # Use context managers properly - they will auto-cleanup
-            async with (
-                stdio_client(server_params) as (read, write),
-                ClientSession(read, write) as session,
-            ):
-                await session.initialize()
-                logger.info(f"Connected to MCP server: {server_name}")
+            if server_config.transport == "stdio":
+                # Validate stdio requirements
+                if not server_config.command:
+                    raise ValueError(f"Server {server_name}: command required for stdio transport")
 
-                # Execute the operation
-                result = await operation(session)
-                return result
+                # Create server parameters
+                server_params = StdioServerParameters(
+                    command=server_config.command,
+                    args=server_config.args,
+                    env=server_config.env if server_config.env else None,
+                )
+
+                # Use stdio client
+                async with (
+                    stdio_client(server_params) as (read, write),
+                    ClientSession(read, write) as session,
+                ):
+                    await session.initialize()
+                    logger.info(f"Connected to MCP server: {server_name}")
+                    result = await operation(session)
+                    return result
+
+            elif server_config.transport in ("sse", "http"):
+                # Validate SSE/HTTP requirements
+                if not server_config.url:
+                    transport = server_config.transport
+                    raise ValueError(
+                        f"Server {server_name}: url required for {transport} transport"
+                    )
+
+                # Use SSE client for HTTP/SSE transport with headers
+                async with (
+                    sse_client(server_config.url, headers=server_config.headers or None) as (
+                        read,
+                        write,
+                    ),
+                    ClientSession(read, write) as session,
+                ):
+                    await session.initialize()
+                    logger.info(f"Connected to MCP server: {server_name}")
+                    result = await operation(session)
+                    return result
+
+            else:
+                raise NotImplementedError(f"Transport {server_config.transport} not supported")
+
         except Exception as e:
             logger.error(f"MCP operation failed on {server_name}: {e}")
             raise RuntimeError(f"MCP operation failed on {server_name}: {e}") from e

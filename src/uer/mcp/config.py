@@ -11,10 +11,21 @@ class MCPServerConfig(BaseModel):
     """Configuration for a single MCP server."""
 
     name: str = Field(..., description="Unique name for the MCP server")
-    command: str = Field(..., description="Command to execute (e.g., 'npx', 'python')")
-    args: list[str] = Field(default_factory=list, description="Command arguments")
+    command: str = Field(
+        default="", description="Command to execute (e.g., 'npx', 'python') - required for stdio"
+    )
+    args: list[str] = Field(
+        default_factory=list, description="Command arguments - for stdio transport"
+    )
     env: dict[str, str] = Field(default_factory=dict, description="Environment variables")
-    transport: str = Field(default="stdio", description="Transport type (stdio, sse, http)")
+    transport: str = Field(default="stdio", description="Transport type: stdio, sse, or http")
+    url: str = Field(
+        default="", description="HTTP/SSE endpoint URL - required for sse/http transports"
+    )
+    headers: dict[str, str] = Field(
+        default_factory=dict,
+        description="HTTP headers for sse/http transports (e.g., Authorization)",
+    )
 
 
 class MCPConfig(BaseModel):
@@ -80,12 +91,14 @@ class MCPConfig(BaseModel):
                     command="npx",
                     args=["-y", "@modelcontextprotocol/server-memory"],
                     transport="stdio",
+                    headers={},
                 ),
                 "fetch": MCPServerConfig(
                     name="fetch",
                     command="npx",
                     args=["-y", "@modelcontextprotocol/server-fetch"],
                     transport="stdio",
+                    headers={},
                 ),
             }
         )

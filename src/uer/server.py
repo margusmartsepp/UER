@@ -216,18 +216,39 @@ async def list_tools() -> list[Tool]:
                         "description": (
                             "Map of server configurations for 'add' or 'update' operations. "
                             "Each key is the server name, value is the config. "
-                            "Example: {'filesystem': {'command': 'npx', 'args': ['-y', '@modelcontextprotocol/server-filesystem', '/path']}}"
+                            "For stdio: {'command': 'npx', 'args': [...], 'transport': 'stdio'}. "
+                            "For SSE/HTTP: {'url': 'https://example.com/mcp', 'transport': 'sse', 'headers': {'Authorization': 'Bearer token'}}"
                         ),
                         "additionalProperties": {
                             "type": "object",
                             "properties": {
-                                "command": {"type": "string"},
-                                "args": {"type": "array", "items": {"type": "string"}},
+                                "command": {
+                                    "type": "string",
+                                    "description": "Command for stdio transport",
+                                },
+                                "args": {
+                                    "type": "array",
+                                    "items": {"type": "string"},
+                                    "description": "Args for stdio",
+                                },
                                 "env": {
                                     "type": "object",
                                     "additionalProperties": {"type": "string"},
                                 },
-                                "transport": {"type": "string", "default": "stdio"},
+                                "transport": {
+                                    "type": "string",
+                                    "enum": ["stdio", "sse", "http"],
+                                    "default": "stdio",
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "description": "Endpoint URL for sse/http transport",
+                                },
+                                "headers": {
+                                    "type": "object",
+                                    "additionalProperties": {"type": "string"},
+                                    "description": "HTTP headers for sse/http (e.g., Authorization)",
+                                },
                             },
                         },
                     },
@@ -664,6 +685,8 @@ async def handle_mcp_servers(arguments: Any) -> Sequence[TextContent]:
                     "args": config.args,
                     "env": config.env,
                     "transport": config.transport,
+                    "url": config.url,
+                    "headers": config.headers,
                 }
 
             logger.info(f"Listed {len(servers_info)} MCP servers")
@@ -713,6 +736,8 @@ async def handle_mcp_servers(arguments: Any) -> Sequence[TextContent]:
                                 "args": config.args,
                                 "env": config.env,
                                 "transport": config.transport,
+                                "url": config.url,
+                                "headers": config.headers,
                             },
                         },
                         indent=2,
@@ -746,10 +771,12 @@ async def handle_mcp_servers(arguments: Any) -> Sequence[TextContent]:
                 try:
                     new_server = MCPServerConfig(
                         name=name,
-                        command=config.get("command", "npx"),
+                        command=config.get("command", ""),
                         args=config.get("args", []),
                         env=config.get("env", {}),
                         transport=config.get("transport", "stdio"),
+                        url=config.get("url", ""),
+                        headers=config.get("headers", {}),
                     )
                     mcp_manager.config.servers[name] = new_server
                     added.append(name)
@@ -797,10 +824,12 @@ async def handle_mcp_servers(arguments: Any) -> Sequence[TextContent]:
                 try:
                     new_server = MCPServerConfig(
                         name=name,
-                        command=config.get("command", "npx"),
+                        command=config.get("command", ""),
                         args=config.get("args", []),
                         env=config.get("env", {}),
                         transport=config.get("transport", "stdio"),
+                        url=config.get("url", ""),
+                        headers=config.get("headers", {}),
                     )
                     mcp_manager.config.servers[name] = new_server
                     updated.append(name)
