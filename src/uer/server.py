@@ -159,13 +159,49 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
+            name="mcp_registry",
+            description=(
+                "Browse and install MCP servers from the official registry (registry.modelcontextprotocol.io). "
+                "Use 'search' to find servers by keyword, 'get' to view server details, "
+                "'install' to add a server from the registry. "
+                "Registry has 300+ servers including Slack, GitHub, Salesforce, AWS, etc."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "operation": {
+                        "type": "string",
+                        "enum": ["search", "get", "install", "list"],
+                        "description": "Operation: search (find servers), get (view details), install (add to config), list (browse all)",
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "Search query for 'search' operation (e.g., 'slack', 'database', 'github')",
+                    },
+                    "server_id": {
+                        "type": "string",
+                        "description": "Server ID for 'get' or 'install' operations (e.g., 'io.github.modelcontextprotocol.server-slack')",
+                    },
+                    "config_overrides": {
+                        "type": "object",
+                        "description": "Optional config overrides for 'install' (e.g., env vars, custom args)",
+                        "properties": {
+                            "env": {"type": "object"},
+                            "args": {"type": "array", "items": {"type": "string"}},
+                        },
+                    },
+                },
+                "required": ["operation"],
+            },
+        ),
+        Tool(
             name="mcp_servers",
             description=(
                 "Manage MCP server configurations (CRUD operations). "
-                "Use 'list' to see all servers, 'get' to view one server, "
-                "'add' to create new servers, 'update' to modify existing ones, "
+                "Use 'list' to see configured servers, 'get' to view one server, "
+                "'add' to manually create servers, 'update' to modify existing ones, "
                 "'delete' to remove servers. "
-                "Use the fetch tool first to look up MCP server requirements from npm or GitHub."
+                "For installing from registry, use mcp_registry tool instead."
             ),
             inputSchema={
                 "type": "object",
@@ -215,6 +251,8 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await handle_mcp_call(arguments)
     elif name == "mcp_list_tools":
         return await handle_mcp_list_tools(arguments)
+    elif name == "mcp_registry":
+        return await handle_mcp_registry(arguments)
     elif name == "mcp_servers":
         return await handle_mcp_servers(arguments)
     else:
@@ -362,6 +400,239 @@ async def handle_mcp_call(arguments: Any) -> Sequence[TextContent]:
 
     except Exception as e:
         logger.exception(f"Unexpected error in mcp_call: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
+            )
+        ]
+
+
+async def handle_mcp_registry(arguments: Any) -> Sequence[TextContent]:
+    """Handle mcp_registry operations - browse and install from official registry."""
+    try:
+        import httpx
+
+        operation = arguments.get("operation")
+
+        if not operation:
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {"error": "Missing parameter", "message": "operation is required"}
+                    ),
+                )
+            ]
+
+        registry_url = "https://registry.modelcontextprotocol.io"
+
+        # LIST operation - browse all servers
+        if operation == "list":
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(f"{registry_url}/servers", timeout=10.0)
+                    response.raise_for_status()
+                    servers = response.json()
+
+                    logger.info(f"Listed {len(servers)} servers from registry")
+                    return [
+                        TextContent(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "operation": "list",
+                                    "count": len(servers),
+                                    "servers": servers[:50],  # Limit to first 50
+                                    "note": "Showing first 50 servers. Use 'search' to find specific servers.",
+                                },
+                                indent=2,
+                            ),
+                        )
+                    ]
+            except Exception as e:
+                logger.error(f"Failed to list registry servers: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Registry error", "message": str(e)}),
+                    )
+                ]
+
+        # SEARCH operation
+        elif operation == "search":
+            query = arguments.get("query")
+            if not query:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Missing parameter", "message": "query required for search"}
+                        ),
+                    )
+                ]
+
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        f"{registry_url}/servers", params={"q": query}, timeout=10.0
+                    )
+                    response.raise_for_status()
+                    results = response.json()
+
+                    logger.info(f"Found {len(results)} servers matching '{query}'")
+                    return [
+                        TextContent(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "operation": "search",
+                                    "query": query,
+                                    "count": len(results),
+                                    "results": results,
+                                },
+                                indent=2,
+                            ),
+                        )
+                    ]
+            except Exception as e:
+                logger.error(f"Failed to search registry: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Registry error", "message": str(e)}),
+                    )
+                ]
+
+        # GET operation - view server details
+        elif operation == "get":
+            server_id = arguments.get("server_id")
+            if not server_id:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": "Missing parameter", "message": "server_id required for get"}
+                        ),
+                    )
+                ]
+
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(f"{registry_url}/servers/{server_id}", timeout=10.0)
+                    response.raise_for_status()
+                    server_info = response.json()
+
+                    logger.info(f"Retrieved server details: {server_id}")
+                    return [
+                        TextContent(
+                            type="text",
+                            text=json.dumps(
+                                {
+                                    "operation": "get",
+                                    "server_id": server_id,
+                                    "details": server_info,
+                                },
+                                indent=2,
+                            ),
+                        )
+                    ]
+            except Exception as e:
+                logger.error(f"Failed to get server details: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Registry error", "message": str(e)}),
+                    )
+                ]
+
+        # INSTALL operation - add server from registry to config
+        elif operation == "install":
+            server_id = arguments.get("server_id")
+            if not server_id:
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "error": "Missing parameter",
+                                "message": "server_id required for install",
+                            }
+                        ),
+                    )
+                ]
+
+            try:
+                # Fetch server details from registry
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(f"{registry_url}/servers/{server_id}", timeout=10.0)
+                    response.raise_for_status()
+                    server_info = response.json()
+
+                # Extract installation info
+                config_overrides = arguments.get("config_overrides", {})
+
+                # Determine server name (use last part of server_id or custom name)
+                server_name = server_id.split(".")[-1].replace("server-", "")
+
+                # Build configuration from registry info
+                from uer.mcp.config import MCPServerConfig
+
+                # Get command and args from registry metadata
+                command = server_info.get("command", "npx")
+                args = config_overrides.get("args") or server_info.get("args", ["-y", server_id])
+                env = config_overrides.get("env") or server_info.get("env", {})
+
+                new_server = MCPServerConfig(
+                    name=server_name,
+                    command=command,
+                    args=args,
+                    env=env,
+                    transport="stdio",
+                )
+
+                mcp_manager.config.servers[server_name] = new_server
+
+                logger.info(f"Installed server from registry: {server_id} as '{server_name}'")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {
+                                "operation": "install",
+                                "server_id": server_id,
+                                "installed_as": server_name,
+                                "config": {
+                                    "command": command,
+                                    "args": args,
+                                    "env": env,
+                                },
+                                "message": f"Server '{server_name}' installed successfully",
+                            },
+                            indent=2,
+                        ),
+                    )
+                ]
+            except Exception as e:
+                logger.error(f"Failed to install server: {e}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Installation failed", "message": str(e)}),
+                    )
+                ]
+
+        else:
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {"error": "Invalid operation", "message": f"Unknown operation: {operation}"}
+                    ),
+                )
+            ]
+
+    except Exception as e:
+        logger.exception(f"Unexpected error in mcp_registry: {str(e)}")
         return [
             TextContent(
                 type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
