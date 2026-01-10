@@ -241,13 +241,13 @@
 > **Architecture:** S3-compatible storage with MinIO (local), Skills API compliance, Jinja2 templates
 > **Reference:** [docs/ADR-002-S3-Storage-Architecture.md](docs/ADR-002-S3-Storage-Architecture.md)
 
-### Phase 2a: Core S3 Storage (3 hours)
+### Phase 2a: Core S3 Storage ✅ COMPLETE
 
 **Goal:** S3-compatible storage with local MinIO backend
 
-#### Storage Backend Interface
-- [ ] Create `src/uer/storage/__init__.py`
-- [ ] Create `src/uer/storage/base.py`:
+#### Storage Backend Interface ✅
+- [x] Create `src/uer/storage/__init__.py`
+- [x] Create `src/uer/storage/base.py`:
   ```python
   from typing import Protocol
   from datetime import datetime
@@ -279,28 +279,32 @@
       async def object_exists(bucket, key) -> bool
       async def set_object_retention(bucket, key, retention) -> None  # Optional
   ```
-- [ ] Document interface with examples
+- [x] Document interface with examples
 
-#### MinIO Backend Implementation
-- [ ] Create `src/uer/storage/minio_backend.py`
-- [ ] Initialize MinIO client from environment (MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_SECURE)
-- [ ] Implement `put_object` with content type and metadata support
-- [ ] Implement `get_object` returning data + metadata
-- [ ] Implement `delete_object`
-- [ ] Implement `list_objects` with prefix filtering and recursive option
-- [ ] Implement `object_exists` helper
-- [ ] Add connection pooling and error handling
-- [ ] Auto-create default buckets: `uer-context`, `uer-skills`, `uer-templates`
+#### MinIO Backend Implementation ✅
+- [x] Create `src/uer/storage/minio_backend.py`
+- [x] Initialize MinIO client from environment (MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_SECURE)
+- [x] Implement `put_object` with content type and metadata support
+- [x] Implement `get_object` returning data + metadata
+- [x] Implement `delete_object`
+- [x] Implement `list_objects` with prefix filtering and recursive option
+- [x] Implement `object_exists` helper
+- [x] Add connection pooling and error handling
+- [x] Auto-create default buckets: `uer-context`, `uer-skills`, `uer-templates` (lazy initialization)
+- [x] **BONUS:** Lazy initialization to support optional storage
+- [x] **BONUS:** Flexible configuration with 3 deployment modes
 
-#### Storage Manager
-- [ ] Create `src/uer/storage/manager.py`
-- [ ] URI parsing: `registry://type/key` → `s3://uer-{type}/key`
-- [ ] URI parsing: `s3://bucket/key` → `(bucket, key)`
-- [ ] Convenience methods wrapping backend
-- [ ] Bucket creation on startup
+#### Storage Manager ✅
+- [x] Create `src/uer/storage/manager.py`
+- [x] URI parsing: `registry://type/key` → `s3://uer-{type}/key`
+- [x] URI parsing: `s3://bucket/key` → `(bucket, key)`
+- [x] Convenience methods wrapping backend
+- [x] Lazy backend initialization (not on startup)
+- [x] **BONUS:** Storage availability checking
+- [x] **BONUS:** Support for disabled storage mode
 
-#### Environment Configuration
-- [ ] Add MinIO config to `.env.example`:
+#### Environment Configuration ✅
+- [x] Add MinIO config to `.env.example`:
   ```bash
   # Storage Backend (MinIO for local development)
   STORAGE_BACKEND=minio
@@ -309,7 +313,7 @@
   MINIO_SECRET_KEY=minioadmin
   MINIO_SECURE=false
   ```
-- [ ] Create `docker-compose.yml` for MinIO:
+- [x] Create `docker-compose.yml` for MinIO:
   ```yaml
   services:
     minio:
@@ -324,14 +328,20 @@
       volumes:
         - ./data/minio:/data
   ```
-- [ ] Document MinIO setup in README (one-command: `docker-compose up -d`)
+- [x] Document MinIO setup in README (one-command: `docker-compose up -d`)
+- [x] **BONUS:** Document all 3 storage configuration options in README
+- [x] **BONUS:** Add storage config class (`src/uer/storage/config.py`)
+- [x] **BONUS:** Conditional tool registration based on storage availability
 
-#### Testing
-- [ ] Test MinIO connection
-- [ ] Test bucket creation
-- [ ] Test put/get/delete operations
-- [ ] Test prefix filtering (list skills, list contexts)
-- [ ] Test error handling (bucket not found, object not found, connection failed)
+#### Testing ✅
+- [x] Test MinIO connection
+- [x] Test bucket creation (lazy initialization)
+- [x] Test put/get/delete operations
+- [x] Test prefix filtering (list skills, list contexts)
+- [x] Test error handling (bucket not found, object not found, connection failed)
+- [x] **BONUS:** Test storage disabled mode (STORAGE_ENABLED=false)
+- [x] **BONUS:** Test Docker MinIO mode (default)
+- [x] **BONUS:** Verify server starts without MinIO running
 
 ---
 
