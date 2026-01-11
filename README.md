@@ -3,7 +3,9 @@
 
   # Universal Expert Registry
 
-  [![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
+  [![npm version](https://img.shields.io/npm/v/uer-mcp)](https://www.npmjs.com/package/uer-mcp)
+  [![npm](https://img.shields.io/npm/dm/uer-mcp)](https://www.npmjs.com/package/uer-mcp)
+  [![npm bundle size](https://img.shields.io/bundlephobia/min/uer-mcp)](https://www.npmjs.com/package/uer-mcp)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
   **Multi-Provider LLM Gateway • S3-Compatible Storage • MCP Tool Orchestration**
