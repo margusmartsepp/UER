@@ -12,7 +12,9 @@
 ---
 
 **Standard config** works in most MCP clients:
-> 💡 **Quick Start**: Get a free Gemini API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys)
+> 💡 **Quick Start**: Get a free Gemini API key at [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys) or use LM Studio (100% free, local)
+
+**Cloud (Gemini):**
 ```json
 {
   "mcpServers": {
@@ -20,7 +22,25 @@
       "command": "npx",
       "args": ["uer-mcp@latest"],
       "env": {
-        "GEMINI_API_KEY": "your-key-here"
+        // Specific provider key(s)
+        "GEMINI_API_KEY": "your-key-here",
+        // LM Studio (optional), support for hosted models without keys
+        "OPENAI_API_BASE": "http://localhost:1234/v1"
+      }
+    }
+  }
+}
+```
+
+**Local (LM Studio - No API Key Required):**
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "OPENAI_API_BASE": "http://localhost:1234/v1"
       }
     }
   }
