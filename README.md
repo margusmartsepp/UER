@@ -23,19 +23,20 @@
   "mcpServers": {
     "uer": {
       "command": "npx",
-      "args": ["uer-mcp@latest"],
+      "args": [
+        "-y",
+        "uer-mcp@latest"
+      ],
       "env": {
-        // Specific provider key(s)
-        "CEREBRAS_API_KEY": "your-key-here",
-        "GEMINI_API_KEY": "your-key-here", // etc
-        // LM Studio (optional) - local models
+        "CEREBRAS_API_KEY": "<YOUR_TOKEN>",
+        "GEMINI_API_KEY": "<YOUR_TOKEN>",
         "LM_STUDIO_API_BASE": "http://localhost:1234/v1"
       }
     }
   }
 }
 ```
-An actual developer setup could look like:
+An actual developer setup for Claude could look like (docker exists and minio is used for that):
 ```json
 {
   "mcpServers": {
@@ -52,7 +53,10 @@ An actual developer setup could look like:
   }
 }
 ```
-
+**Storage Setup (Optional):**
+- Quick start: Run `docker-compose up -d` to start MinIO locally
+- See [Storage Configuration Options](#storage-configuration-options) for detailed setup (Docker MinIO, AWS S3, or manual configuration)
+- Storage enables skills, templates, and behavior monitoring features
 
 > **Storage is optional**: This config works immediately for LLM and MCP features. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
 
