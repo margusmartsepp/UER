@@ -1,7 +1,7 @@
 [project]
 name = "uer"
-version = "0.1.0"
-description = "UER - Universal Expert Registry: Manipulation detection for AI systems"
+version = "4.1.0"
+description = "UER - Universal Expert Registry: Multi-agent safety monitoring and manipulation detection"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
