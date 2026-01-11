@@ -1,7 +1,7 @@
 {
   "name": "uer-mcp",
-  "version": "4.0.0",
-  "description": "Universal Expert Registry - Multi-LLM MCP Server with access to 100+ LLM providers, 1000+ MCP servers, and unlimited context storage",
+  "version": "4.1.0",
+  "description": "Universal Expert Registry - Multi-agent safety monitoring, sandbagging detection, and simulation framework with 100+ LLM providers",
   "main": "index.js",
   "bin": {
     "uer-mcp": "bin/uer-mcp.js"
@@ -51,12 +51,15 @@
   "mcp": {
     "displayName": "Universal Expert Registry",
     "icon": "img/uer.jpg",
-    "description": "Access 100+ LLM providers (Claude, GPT, Gemini, etc.), connect to 1000+ MCP servers, and manage unlimited context with external storage. Enables multi-agent workflows with subagent delegation.",
+    "description": "Multi-agent safety monitoring, sandbagging detection, and simulation framework. Access 100+ LLM providers, connect to 1000+ MCP servers, and manage unlimited context with external storage.",
     "features": [
+      "Multi-Agent Safety Monitoring - 15+ behavior patterns (AgentVerse, sycophancy, deception, sandbagging)",
+      "Sandbagging Detection - Multi-method detection with consistency testing and capability elicitation",
+      "Multi-Agent Simulation - Full conversation orchestration with personas, audit trails, and manipulation detection",
       "Universal LLM Access - Call any LLM through LiteLLM (Claude, GPT, Gemini, Bedrock, Azure, local models)",
       "MCP Tool Orchestration - Connect to 1000+ MCP servers (filesystem, databases, browsers, etc.)",
       "Shared Memory/Context - Break context window limits via external storage with URI references",
-      "Subagent Delegation - Spawn subagents with full chat history, not just single messages"
+      "Subagent Delegation - Spawn subagents with full chat history and behavior monitoring"
     ],
     "tools": [
       {
@@ -66,6 +69,26 @@
       {
         "name": "mcp_call",
         "description": "Call tools from other MCP servers"
+      },
+      {
+        "name": "behavior_get_logs",
+        "description": "Retrieve behavior monitoring logs with filtering"
+      },
+      {
+        "name": "behavior_analyze_agent",
+        "description": "Analyze agent behavior patterns with risk scoring"
+      },
+      {
+        "name": "behavior_generate_report",
+        "description": "Generate comprehensive safety reports"
+      },
+      {
+        "name": "sandbagging_evaluate",
+        "description": "Evaluate models for sandbagging (strategic underperformance)"
+      },
+      {
+        "name": "sandbagging_quick_test",
+        "description": "Quick sandbagging screening test"
       },
       {
         "name": "put",
