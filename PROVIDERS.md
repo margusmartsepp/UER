@@ -1,5 +1,7 @@
 # LiteLLM providers: a unified gateway to 100+ LLM integrations
 
+> ⚠️ **Testing Status**: This guide documents LiteLLM's 100+ provider integrations. UER has been extensively tested with **Anthropic, Cerebras, OpenAI, Gemini, LM Studio, and Ollama**. Other providers are supported via LiteLLM's architecture but may require minor adjustments. This is a hackathon proof-of-concept—version numbers track feature implementation, not production readiness. Please [report issues](https://github.com/margusmartsepp/UER/issues) if you encounter problems with untested providers.
+
 LiteLLM supports **over 100 model providers** through a consistent OpenAI-compatible interface, enabling developers to build systems that seamlessly switch between cloud APIs, enterprise deployments, and self-hosted models. The integration landscape divides into four distinct categories—each with characteristic authentication patterns and configuration approaches—but all converge on the same `completion()` API with provider prefixes for routing.
 
 The key insight for multi-provider systems: **authentication complexity scales with enterprise requirements**. Simple API-key providers (Anthropic, Groq) need one environment variable. Enterprise clouds (Azure, Bedrock, Vertex) support 5-7 authentication methods including managed identities, STS role assumption, and OIDC federation. Self-hosted solutions (Ollama, vLLM) often need no authentication at all—just an endpoint URL.

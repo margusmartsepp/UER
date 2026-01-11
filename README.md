@@ -7,6 +7,8 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
   **Multi-Provider LLM Gateway • S3-Compatible Storage • MCP Tool Orchestration**
+  
+  > ⚠️ **Development Status**: This is a hackathon proof-of-concept. While the architecture supports 100+ LLM providers via LiteLLM, only a subset (Anthropic, Cerebras, OpenAI, Gemini, LM Studio, Ollama) have been extensively tested. Version numbers track feature implementation progress, not production readiness. If you encounter issues with other providers, please [open an issue](https://github.com/margusmartsepp/UER/issues).
 </div>
 
 ---
@@ -380,16 +382,22 @@ This project uses [LiteLLM](https://github.com/BerriAI/litellm) as the unified L
 
 ### Supported Providers (Examples)
 
-| Provider | Model Examples |
-|----------|---------------|
-| Anthropic | `anthropic/claude-sonnet-4-5-20250929`, `anthropic/claude-opus-4-5-20251101` |
-| OpenAI | `openai/gpt-4o`, `openai/o3-mini` |
-| Google | `gemini/gemini-2.5-flash`, `gemini/gemini-2.0-flash-exp` |
-| Cerebras | `cerebras/llama-3.3-70b`, `cerebras/qwen-3-235b-a22b-instruct-2507` |
-| Azure | `azure/gpt-4-deployment` |
-| AWS Bedrock | `bedrock/anthropic.claude-3-sonnet` |
-| LM Studio | `lm_studio/meta-llama-3.1-8b-instruct` (local) |
-| Ollama | `ollama/llama3.1:8b-instruct-q4_K_M` (local) |
+| Provider | Model Examples | Testing Status |
+|----------|---------------|----------------|
+| Anthropic | `anthropic/claude-sonnet-4-5-20250929`, `anthropic/claude-opus-4-5-20251101` | ✅ Tested |
+| Cerebras | `cerebras/llama-3.3-70b`, `cerebras/qwen-3-235b-a22b-instruct-2507` | ✅ Tested |
+| OpenAI | `openai/gpt-4o`, `openai/o3-mini` | ✅ Tested |
+| Google | `gemini/gemini-2.5-flash`, `gemini/gemini-2.0-flash-exp` | ✅ Tested |
+| LM Studio | `lm_studio/meta-llama-3.1-8b-instruct` (local) | ✅ Tested |
+| Ollama | `ollama/llama3.1:8b-instruct-q4_K_M` (local) | ✅ Tested |
+| Azure | `azure/gpt-4-deployment` | ⚠️ Untested |
+| AWS Bedrock | `bedrock/anthropic.claude-3-sonnet` | ⚠️ Untested |
+| Cohere | `cohere_chat/command-r-plus` | ⚠️ Untested |
+| Together AI | `together_ai/meta-llama/Llama-3-70b-chat-hf` | ⚠️ Untested |
+
+**Testing Status:**
+- ✅ **Tested**: Verified during development with live API queries and model caching
+- ⚠️ **Untested**: Supported via LiteLLM but not extensively tested. May require minor adjustments. Please [report issues](https://github.com/margusmartsepp/UER/issues) if you encounter problems.
 
 **Note:** Model names change frequently. Use the discovery tools above to find current models.
 
