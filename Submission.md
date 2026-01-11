@@ -542,31 +542,63 @@ By implementing research findings in an accessible, production-ready platform, U
 
 ## 5. References
 
-**General Introduction:**
-- Park, P. S., et al. (2024). AI deception: A survey of examples, risks, and potential solutions. *arXiv:2308.14752*
-- Stanford HAI. (2025). *Artificial Intelligence Index Report 2025*. https://hai.stanford.edu/ai-index-2025
-- Sharma, M., et al. (2024). Towards Understanding Sycophancy in Language Models. *arXiv:2310.13548*
+**Core Research Papers (Implementation Foundation):**
 
-**Track 1: Measurement & Evaluation:**
-- van der Weij, J., et al. (2024). AI Sandbagging: Language Models can Strategically Underperform on Evaluations. *arXiv:2406.07358*
-- Li, N., et al. (2024). The WMDP Benchmark: Measuring and Reducing Malicious Use With Unlearning. *arXiv:2403.03218*
+- Chen, W., et al. (2024). AgentVerse: Facilitating Multi-Agent Collaboration and Exploring Emergent Behaviors. *arXiv:2308.10848*. [Track 4: Multi-Agent Behaviors - Volunteer, conformity, destructive patterns]
 
-**Track 2: Real-World Analysis:**
-- METR. (2025). Recent Frontier Models Are Reward Hacking. https://metr.org/blog/2025-06-05-recent-reward-hacking/
-- Weng, L. (2024). Reward Hacking in Reinforcement Learning. https://lilianweng.github.io/posts/2024-11-28-reward-hacking/
-- Denison, C., et al. (2024). Reward hacking behavior can generalize across tasks. *arXiv:2406.06393*
+- Sharma, M., Tong, M., Korbak, T., Duvenaud, D., Askell, A., Bowman, S.R., et al. (2024). Towards Understanding Sycophancy in Language Models. *ICLR 2024*. *arXiv:2310.13548*. [Track 1 & 3: Sycophancy detection patterns]
 
-**Track 3: Mitigations:**
-- OpenAI. (2025). Chain of Thought Monitoring for Misbehavior. https://openai.com/index/chain-of-thought-monitoring/
-- Anthropic. (2025). From shortcuts to sabotage: natural emergent misalignment from reward hacking. https://www.anthropic.com/research/emergent-misalignment-reward-hacking
+- Park, P.S., Goldstein, S., O'Gara, A., Chen, M., & Hendrycks, D. (2024). AI Deception: A Survey of Examples, Risks, and Potential Solutions. *Patterns*, 5(5). *arXiv:2308.14752*. [Foundation: Deception detection methods]
 
-**Track 4: Multi-Agent & Emergent Behavior:**
-- Chen, W., et al. (2024). AgentVerse: Facilitating Multi-Agent Collaboration and Exploring Emergent Behaviors. *arXiv:2308.10848*
-- (2024). School of Reward Hacks: Hacking Harmless Tasks Generalizes to Misalignment. *arXiv:2501.00003*
+- van der Weij, T., Balesni, M., Hobbhahn, M., Nieuwwesteeg, L., & Meinke, A. (2024). AI Sandbagging: Language Models can Strategically Underperform on Evaluations. *arXiv:2406.07358*. Apollo Research. [Track 1: Multi-method sandbagging detection]
+
+**Chain-of-Thought Monitoring & Reasoning:**
+
+- Korbak, T., Balesni, M., Barnes, E., Bengio, Y., et al. (2025). Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety. *arXiv:2507.11473*.
+
+- Baker, B., Huizinga, J., Gao, L., et al. (2025). Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation. *arXiv:2503.11926*. OpenAI.
+
+- Lanham, T., Chen, A., Radhakrishnan, A., et al. (2023). Measuring Faithfulness in Chain-of-Thought Reasoning. *arXiv:2307.13702*. Anthropic.
+
+**Scheming & Alignment Faking:**
+
+- Schoen, B., Nitishinskaya, E., Balesni, M., et al. (2025). Stress Testing Deliberative Alignment for Anti-Scheming Training. *arXiv:2509.15541*. OpenAI & Apollo Research.
+
+- Meinke, A., Schoen, B., Scheurer, J., et al. (2024). Frontier Models are Capable of In-context Scheming. *arXiv:2412.04984*. Apollo Research.
+
+- Greenblatt, R., Denison, C., Wright, B., et al. (2024). Alignment Faking in Large Language Models. *arXiv:2412.14093*. Anthropic & Redwood Research.
+
+- Hubinger, E., Denison, C., Mu, J., et al. (2024). Sleeper Agents: Training Deceptive LLMs That Persist Through Safety Training. *arXiv:2401.05566*. Anthropic. Code: https://github.com/anthropics/sleeper-agents-paper
+
+**Detection Methods & Interpretability:**
+
+- Goldowsky-Dill, N., Chughtai, B., Heimersheim, S., & Hobbhahn, M. (2025). Detecting Strategic Deception Using Linear Probes. *ICML 2025*. *arXiv:2502.03407*. Code: https://github.com/ApolloResearch/deception-detection
+
+- MacDiarmid, M., Maxwell, T., Schiefer, N., et al. (2024). Simple Probes Can Catch Sleeper Agents. Anthropic Alignment Note. https://www.anthropic.com/research/probes-catch-sleeper-agents
+
+- Zou, A., Phan, L., Chen, S., et al. (2023). Representation Engineering: A Top-Down Approach to AI Transparency. *arXiv:2310.01405*. Center for AI Safety.
+
+- Marks, S., & Tegmark, M. (2024). The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets. *First Conference on Language Modeling (COLM 2024)*. *arXiv:2310.06824*.
+
+**Evaluation & Benchmarking:**
+
+- Li, N., Pan, A., Gopal, A., et al. (2024). The WMDP Benchmark: Measuring and Reducing Malicious Use With Unlearning. *arXiv:2403.03218*. [3,668 questions for dangerous capability measurement]
+
+- OpenAI. (2024). OpenAI o1 System Card. *arXiv:2412.16720*. https://openai.com/index/openai-o1-system-card/
+
+- Mazeika, M., Phan, L., Yin, X., et al. (2024). HarmBench: A Standardized Evaluation Framework for Automated Red Teaming and Robust Refusal. *ICML 2024*. *arXiv:2402.04249*.
+
+**Foundational Theory:**
+
+- Hubinger, E., van Merwijk, C., Mikulik, V., Skalse, J., & Garrabrant, S. (2019). Risks from Learned Optimization in Advanced Machine Learning Systems. *arXiv:1906.01820*. [Mesa-optimization and deceptive alignment]
+
+- Amodei, D., Olah, C., Steinhardt, J., et al. (2016). Concrete Problems in AI Safety. *arXiv:1606.06565*. [Foundational taxonomy: reward hacking, scalable oversight]
 
 **Technical Infrastructure:**
-- LiteLLM. (2024). *LiteLLM Documentation*. https://docs.litellm.ai/
-- Anthropic. (2024). *Model Context Protocol Specification*. https://modelcontextprotocol.io/
+
+- LiteLLM. (2024). *LiteLLM Documentation*. https://docs.litellm.ai/ [100+ LLM provider integration]
+
+- Anthropic. (2024). *Model Context Protocol Specification*. https://modelcontextprotocol.io/ [MCP protocol specification]
 
 ---
 
