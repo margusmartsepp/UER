@@ -155,9 +155,27 @@ class LLMGateway:
                 )
 
         try:
+            # Configure LiteLLM for local OpenAI-compatible servers
+            call_kwargs = kwargs.copy()
+            
+            # If using openai provider with custom base URL (LM Studio, etc.)
+            if provider == "openai":
+                api_base = os.getenv("OPENAI_API_BASE")
+                if api_base:
+                    # Set api_base for LiteLLM to route to local server
+                    call_kwargs["api_base"] = api_base
+                    # Set api_key to dummy value if not set (local servers often don't need it)
+                    if not os.getenv("OPENAI_API_KEY"):
+                        call_kwargs["api_key"] = "dummy"
+            
+            # If using ollama provider with custom base URL
+            elif provider == "ollama":
+                api_base = os.getenv("OLLAMA_API_BASE", "http://localhost:11434/v1")
+                call_kwargs["api_base"] = api_base
+            
             # Call LiteLLM with all parameters
             # Note: response_format, thinking_level, thinking_budget are passed through **kwargs
-            response = await acompletion(model=model, messages=messages, **kwargs)
+            response = await acompletion(model=model, messages=messages, **call_kwargs)
 
             # Convert to dict (LiteLLM returns ModelResponse object)
             return response.model_dump()
