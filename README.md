@@ -24,8 +24,9 @@
         // Specific provider key(s)
         "CEREBRAS_API_KEY": "your-key-here",
         "GEMINI_API_KEY": "your-key-here", // etc
-        // LM Studio (optional), support for hosted models without keys
-        "OPENAI_API_BASE": "http://localhost:1234/v1"
+        // LM Studio (optional) - requires dummy API key
+        "OPENAI_API_BASE": "http://localhost:1234/v1",
+        "OPENAI_API_KEY": "sk-local" // any dummy value works
       }
     }
   }

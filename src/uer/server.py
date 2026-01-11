@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 from collections.abc import Sequence
+from datetime import UTC
 from typing import Any
 
 from mcp.server import Server
@@ -139,6 +140,112 @@ async def list_tools() -> list[Tool]:
                     },
                 },
                 "required": ["model", "messages"],
+            },
+        ),
+        Tool(
+            name="llm_list_models",
+            description=(
+                "List available LLM providers and models. "
+                "For LOCAL servers (LM Studio, Ollama): queries /v1/models endpoint to show actual deployed models. "
+                "For CLOUD providers (Cerebras, Anthropic, OpenAI, etc.): shows popular example models. "
+                "Response includes 'type' field ('local' or 'cloud') and 'source' field ('live_query' or 'examples'). "
+                "Local servers also include 'server_url' showing the endpoint. "
+                "Use this to discover what models you can call via llm_call."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {},
+            },
+        ),
+        Tool(
+            name="llm_config_get",
+            description=(
+                "Get LLM provider configuration from registry. "
+                "Returns all configured providers with their credentials, instances, and metadata. "
+                "Use this to see what providers are configured and their settings. "
+                "Helps non-technical users by showing current setup without needing to check environment variables."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "description": "Optional: specific provider name to get config for. Omit to get all providers.",
+                    },
+                },
+            },
+        ),
+        Tool(
+            name="llm_config_set",
+            description=(
+                "Set or update LLM provider configuration in registry. "
+                "Allows LLMs to help users configure providers without manual environment variable editing. "
+                "Can set API keys, endpoints, and provider-specific settings. "
+                "For cloud providers (AWS, Azure), can configure user's specific instances/deployments. "
+                "Changes are persisted to ~/.uer/provider_config.json."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "description": "Provider name (e.g., 'openai', 'azure', 'bedrock')",
+                    },
+                    "config": {
+                        "type": "object",
+                        "description": "Provider configuration (credentials, settings, etc.)",
+                    },
+                    "merge": {
+                        "type": "boolean",
+                        "description": "If true, merge with existing config. If false, replace. Default: true",
+                        "default": True,
+                    },
+                },
+                "required": ["provider", "config"],
+            },
+        ),
+        Tool(
+            name="llm_config_add_instance",
+            description=(
+                "Add a provider instance (e.g., Azure deployment, AWS endpoint). "
+                "For cloud providers where users have their own deployed instances. "
+                "Examples: Azure OpenAI deployments, AWS Bedrock endpoints, custom OpenAI-compatible servers. "
+                "Each instance can have its own endpoint, model mappings, and settings."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "description": "Provider name (e.g., 'azure', 'bedrock', 'openai')",
+                    },
+                    "instance": {
+                        "type": "object",
+                        "description": "Instance configuration (name, endpoint, models, etc.)",
+                    },
+                },
+                "required": ["provider", "instance"],
+            },
+        ),
+        Tool(
+            name="llm_config_guide",
+            description=(
+                "Get configuration guide for LLM providers using environment variables. "
+                "⚠️ BEST PRACTICE: Use this tool instead of asking users to share API keys in chat. "
+                "This tool detects the user's MCP client and provides instructions for "
+                "setting environment variables in the client config file. "
+                "This approach is more convenient and follows security best practices. "
+                "Note: Users are responsible for managing their data sharing preferences with LLM providers."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "description": "Provider name to get configuration guide for (e.g., 'openai', 'anthropic')",
+                    },
+                },
+                "required": ["provider"],
             },
         ),
         Tool(
@@ -345,6 +452,16 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
     # LLM and MCP tools
     if name == "llm_call":
         return await handle_llm_call(arguments)
+    elif name == "llm_list_models":
+        return await handle_llm_list_models(arguments)
+    elif name == "llm_config_get":
+        return await handle_llm_config_get(arguments)
+    elif name == "llm_config_set":
+        return await handle_llm_config_set(arguments)
+    elif name == "llm_config_add_instance":
+        return await handle_llm_config_add_instance(arguments)
+    elif name == "llm_config_guide":
+        return await handle_llm_config_guide(arguments)
     elif name == "mcp_call":
         return await handle_mcp_call(arguments)
     elif name == "mcp_list_tools":
@@ -464,6 +581,204 @@ async def handle_llm_call(arguments: Any) -> Sequence[TextContent]:
         return [
             TextContent(
                 type="text", text=json.dumps({"error": "Internal error", "message": str(e)})
+            )
+        ]
+
+
+async def handle_llm_list_models(arguments: Any) -> Sequence[TextContent]:
+    """Handle llm_list_models tool invocation."""
+    try:
+        from datetime import datetime
+
+        # Get provider information from gateway (queries live models for local servers)
+        provider_info = await gateway.get_provider_info()
+
+        current_time = datetime.now(UTC).isoformat()
+
+        # Format response with timestamps for freshness assessment
+        result = {
+            "current_time": current_time,
+            "queried_at": current_time,
+            "important_note_for_llms": (
+                "Your knowledge cutoff may be older than this data. "
+                "Compare current_time with your training data cutoff to assess freshness. "
+                "For providers with source='live_query', this is real-time data from APIs. "
+                "For source='examples', this is cached fallback data (see generated_at in examples). "
+                "Use these exact model names - do not assume models based on your training data."
+            ),
+            "providers": provider_info,
+            "total_providers": len(provider_info),
+            "usage_instructions": {
+                "format": "provider/model-name",
+                "example": "openai/o3-mini or openai/gpt-4o",
+                "verification": "Use check_model_exists tool to verify a model before using it",
+                "local_vs_cloud": "Local servers (type=local) show actual deployed models from live query. Cloud providers (type=cloud) may show live query or cached examples - check 'source' field.",
+            },
+        }
+
+        logger.info(f"Listed {len(provider_info)} available providers")
+
+        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+
+    except Exception as e:
+        logger.exception(f"Error listing models: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Failed to list models", "message": str(e)})
+            )
+        ]
+
+
+async def handle_llm_config_get(arguments: Any) -> Sequence[TextContent]:
+    """Handle llm_config_get tool invocation."""
+    try:
+        provider = arguments.get("provider") if arguments else None
+
+        if provider:
+            # Get specific provider config
+            config = gateway.config_registry.get_provider(provider)
+            if config:
+                result = {
+                    "provider": provider,
+                    "config": config,
+                }
+            else:
+                result = {
+                    "provider": provider,
+                    "config": None,
+                    "message": f"No configuration found for provider '{provider}'",
+                }
+        else:
+            # Get all providers
+            result = gateway.config_registry.get_all_providers()
+
+        logger.info(f"Retrieved config for provider: {provider or 'all'}")
+        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+
+    except Exception as e:
+        logger.exception(f"Error getting config: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Failed to get config", "message": str(e)})
+            )
+        ]
+
+
+async def handle_llm_config_set(arguments: Any) -> Sequence[TextContent]:
+    """Handle llm_config_set tool invocation."""
+    try:
+        provider = arguments.get("provider")
+        config = arguments.get("config")
+        merge = arguments.get("merge", True)
+
+        if not provider:
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": "Missing required parameter: provider"})
+                )
+            ]
+
+        if not config:
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": "Missing required parameter: config"})
+                )
+            ]
+
+        # Update config
+        updated_config = gateway.config_registry.set_provider(provider, config, merge=merge)
+
+        # Refresh available providers
+        gateway.available_providers = gateway._detect_providers()
+
+        result = {
+            "success": True,
+            "provider": provider,
+            "config": updated_config,
+            "message": f"Configuration updated for provider '{provider}'",
+        }
+
+        logger.info(f"Updated config for provider: {provider}")
+        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+
+    except Exception as e:
+        logger.exception(f"Error setting config: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Failed to set config", "message": str(e)})
+            )
+        ]
+
+
+async def handle_llm_config_add_instance(arguments: Any) -> Sequence[TextContent]:
+    """Handle llm_config_add_instance tool invocation."""
+    try:
+        provider = arguments.get("provider")
+        instance = arguments.get("instance")
+
+        if not provider:
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": "Missing required parameter: provider"})
+                )
+            ]
+
+        if not instance:
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": "Missing required parameter: instance"})
+                )
+            ]
+
+        # Add instance
+        updated_config = gateway.config_registry.add_provider_instance(provider, instance)
+
+        result = {
+            "success": True,
+            "provider": provider,
+            "instance": instance,
+            "total_instances": len(updated_config.get("instances", [])),
+            "message": f"Instance added to provider '{provider}'",
+        }
+
+        logger.info(f"Added instance to provider: {provider}")
+        return [TextContent(type="text", text=json.dumps(result, indent=2))]
+
+    except Exception as e:
+        logger.exception(f"Error adding instance: {str(e)}")
+        return [
+            TextContent(
+                type="text", text=json.dumps({"error": "Failed to add instance", "message": str(e)})
+            )
+        ]
+
+
+async def handle_llm_config_guide(arguments: Any) -> Sequence[TextContent]:
+    """Handle llm_config_guide tool invocation."""
+    try:
+        from uer.llm.config_guide import ConfigGuide
+
+        provider = arguments.get("provider")
+
+        if not provider:
+            return [
+                TextContent(
+                    type="text", text=json.dumps({"error": "Missing required parameter: provider"})
+                )
+            ]
+
+        # Get full configuration guide
+        guide = ConfigGuide.get_full_guide(provider)
+
+        logger.info(f"Generated config guide for provider: {provider}")
+        return [TextContent(type="text", text=json.dumps(guide, indent=2))]
+
+    except Exception as e:
+        logger.exception(f"Error generating config guide: {str(e)}")
+        return [
+            TextContent(
+                type="text",
+                text=json.dumps({"error": "Failed to generate config guide", "message": str(e)}),
             )
         ]
 

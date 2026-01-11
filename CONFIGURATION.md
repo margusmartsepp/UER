@@ -68,8 +68,8 @@ This guide covers how to configure the UER MCP server for different clients and 
    - Click "Start Server" (default port: 1234)
    - You'll see: `HTTP server listening on port 1234`
 4. **Configure UER**:
-   - Add `OPENAI_API_BASE` to your MCP config (see below)
-   - No API key needed!
+   - Add `OPENAI_API_BASE` and `OPENAI_API_KEY` to your MCP config (see below)
+   - Use any dummy value for `OPENAI_API_KEY` (e.g., `"sk-local"`) - it won't be validated
 
 **Advantages**:
 - ✅ 100% free, no usage limits
@@ -136,14 +136,15 @@ This guide covers how to configure the UER MCP server for different clients and 
       "command": "npx",
       "args": ["uer-mcp@latest"],
       "env": {
-        "OPENAI_API_BASE": "http://localhost:1234/v1"
+        "OPENAI_API_BASE": "http://localhost:1234/v1",
+        "OPENAI_API_KEY": "sk-local"
       }
     }
   }
 }
 ```
 
-**Note**: No API key needed for LM Studio! Just set `OPENAI_API_BASE` to your local server URL.
+**Note**: LM Studio requires `OPENAI_API_KEY` to be set (LiteLLM requirement), but the value can be any dummy string like `"sk-local"` since local servers don't validate it.
 
 **Custom Port**: If you changed LM Studio's port (e.g., to 8080), use:
 ```json

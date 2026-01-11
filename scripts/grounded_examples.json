@@ -1,0 +1,23 @@
+{
+  "_metadata": {
+    "generated_at": "2026-01-11T09:37:32.853241+00:00",
+    "note": "These examples were generated from actual API queries. Your knowledge cutoff may be older than this data. Use the current timestamp and generated_at to assess freshness. This is a cached view and may become deprecated - always prefer querying llm_list_models or check_model_exists for live data."
+  },
+  "openai": {
+    "models": [
+      "openai/o4-mini-2025-04-16",
+      "openai/o4-mini",
+      "openai/o3-mini-2025-01-31",
+      "openai/o3-mini",
+      "openai/o3-2025-04-16",
+      "openai/o3",
+      "openai/o1-pro-2025-03-19",
+      "openai/o1-pro",
+      "openai/o1-2024-12-17",
+      "openai/o1"
+    ],
+    "source": "live_query",
+    "queried_at": "2026-01-11T09:37:32.853241+00:00",
+    "total_available": 57
+  }
+}
