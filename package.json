@@ -1,7 +1,7 @@
 {
   "name": "uer-mcp",
-  "version": "4.1.0",
-  "description": "Universal Expert Registry - Multi-agent safety monitoring, sandbagging detection, and simulation framework with 100+ LLM providers",
+  "version": "4.2.0",
+  "description": "Universal Expert Registry - Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration with multi-agent safety monitoring",
   "main": "index.js",
   "bin": {
     "uer-mcp": "bin/uer-mcp.js"
@@ -51,15 +51,17 @@
   "mcp": {
     "displayName": "Universal Expert Registry",
     "icon": "img/uer.jpg",
-    "description": "Multi-agent safety monitoring, sandbagging detection, and simulation framework. Access 100+ LLM providers, connect to 1000+ MCP servers, and manage unlimited context with external storage.",
+    "description": "Multi-provider LLM gateway with 100+ providers, S3-compatible storage, MCP tool orchestration, multi-agent safety monitoring, and sandbagging detection.",
     "features": [
       "Multi-Agent Safety Monitoring - 15+ behavior patterns (AgentVerse, sycophancy, deception, sandbagging)",
       "Sandbagging Detection - Multi-method detection with consistency testing and capability elicitation",
       "Multi-Agent Simulation - Full conversation orchestration with personas, audit trails, and manipulation detection",
       "Universal LLM Access - Call any LLM through LiteLLM (Claude, GPT, Gemini, Bedrock, Azure, local models)",
       "MCP Tool Orchestration - Connect to 1000+ MCP servers (filesystem, databases, browsers, etc.)",
-      "Shared Memory/Context - Break context window limits via external storage with URI references",
-      "Subagent Delegation - Spawn subagents with full chat history and behavior monitoring"
+      "S3-Compatible Storage - Persistent context storage with MinIO, AWS S3, or Azure Blob",
+      "Prompt Injection Detection - Basic content validation and security warnings",
+      "LM Studio Support - Local model hosting with OpenAI-compatible API",
+      "Model Query & Caching - Automatic model detection for Anthropic, Cerebras, OpenAI, Gemini"
     ],
     "tools": [
       {
@@ -91,20 +93,20 @@
         "description": "Quick sandbagging screening test"
       },
       {
-        "name": "put",
-        "description": "Store data in external context storage"
+        "name": "storage_put",
+        "description": "Store data in S3-compatible storage"
       },
       {
-        "name": "get",
-        "description": "Retrieve data from external context storage"
+        "name": "storage_get",
+        "description": "Retrieve data from S3-compatible storage"
       },
       {
-        "name": "delegate",
-        "description": "Delegate tasks to subagents with full context"
+        "name": "llm_list_models",
+        "description": "List available models from configured providers"
       },
       {
-        "name": "search",
-        "description": "Search stored context and knowledge"
+        "name": "llm_config_guide",
+        "description": "Get configuration help for LLM providers"
       }
     ],
     "configuration": {

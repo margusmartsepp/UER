@@ -5,6 +5,54 @@ All notable changes to UER (Universal Expert Registry) will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2026-01-11
+
+### Added
+
+#### LLM Provider Enhancements
+- **Anthropic Model Query**: Live API queries for Anthropic models with caching
+- **Cerebras Model Query**: Live API queries for Cerebras models with caching
+- **LM Studio Support**: Full integration with `lm_studio/` prefix for local models
+- **Model Caching**: Automatic model detection and caching with timestamps
+- **Configuration System**: Comprehensive LLM configuration guide with security warnings
+
+#### Security & Safety
+- **Prompt Injection Detection**: Content validation for external data sources
+  - Risk assessment (low/medium/high)
+  - Pattern detection for common injection techniques
+  - Security warnings and recommendations
+- **Security Documentation**: SECURITY_WARNINGS.md and PROMPT_INJECTION_PROTECTION.md
+
+#### Local Server Support
+- **LM Studio Integration**: Parameter-based configuration with `api_base` and `api_key`
+- **Ollama Support**: Enhanced routing for local Ollama servers
+- **Provider Detection**: Automatic detection of local vs cloud providers
+- **Test Suite**: Comprehensive test script for LM Studio integration
+
+#### Documentation Improvements
+- **PROVIDERS.md**: Complete guide to LiteLLM's 100+ provider integrations
+- **IMPLEMENTATION_SUMMARY.md**: Accurate summary of implemented features
+- **README.md**: Removed exaggerated claims, accurate feature descriptions
+- **Configuration Guides**: Enhanced setup documentation
+
+### Fixed
+- **Pydantic Warnings**: Suppressed serialization warnings for local servers
+- **LiteLLM Routing**: Correct routing for LM Studio and OpenAI-compatible servers
+- **Model Prefix**: Changed from `openai_chat/` to `lm_studio/` per LiteLLM docs
+- **API Base Configuration**: Parameter-based approach instead of environment variables
+
+### Changed
+- **Package Description**: Updated to reflect actual capabilities
+- **Feature List**: Removed unimplemented features (subagent delegation, plan continuation)
+- **Tool Names**: Accurate tool names in package.json (`storage_put` vs `put`)
+- **Tagline**: Changed from "ASI-Level Experts" to "Multi-Provider LLM Gateway"
+
+### Documentation
+- Comprehensive provider integration guide (PROVIDERS.md)
+- Implementation summary based on git history
+- Accurate README without hyperbole
+- Security and safety documentation
+
 ## [4.1.0] - 2026-01-11
 
 ### Added

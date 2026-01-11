@@ -1,7 +1,7 @@
 [project]
 name = "uer"
-version = "4.1.0"
-description = "UER - Universal Expert Registry: Multi-agent safety monitoring and manipulation detection"
+version = "4.2.0"
+description = "UER - Universal Expert Registry: Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
