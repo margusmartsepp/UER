@@ -142,10 +142,13 @@ class LLMGateway:
         provider = model.split("/")[0]
 
         # Check if provider is available
-        # Special case: openai provider works with OPENAI_API_BASE (LM Studio, etc.) without API key
+        # Special cases for local servers
         if provider not in self.available_providers:
-            if provider == "openai" and os.getenv("OPENAI_API_BASE"):
-                # Allow openai provider with custom base URL (local servers)
+            if provider == "openai_chat" and os.getenv("OPENAI_API_BASE"):
+                # Allow openai_chat prefix for local OpenAI-compatible servers (LM Studio, etc.)
+                pass
+            elif provider == "openai" and os.getenv("OPENAI_API_BASE"):
+                # Allow openai prefix with custom base URL (local servers)
                 pass
             else:
                 raise RuntimeError(
@@ -158,15 +161,19 @@ class LLMGateway:
             # Configure LiteLLM for local OpenAI-compatible servers
             call_kwargs = kwargs.copy()
             
-            # If using openai provider with custom base URL (LM Studio, etc.)
-            if provider == "openai":
+            # If using openai_chat provider (local OpenAI-compatible servers like LM Studio)
+            if provider == "openai_chat":
                 api_base = os.getenv("OPENAI_API_BASE")
                 if api_base:
                     # Set api_base for LiteLLM to route to local server
                     call_kwargs["api_base"] = api_base
-                    # Set api_key to dummy value if not set (local servers often don't need it)
-                    if not os.getenv("OPENAI_API_KEY"):
-                        call_kwargs["api_key"] = "dummy"
+                    # Set dummy api_key (local servers usually ignore it)
+                    call_kwargs["api_key"] = os.getenv("OPENAI_API_KEY", "sk-dummy-key-for-local-server")
+            
+            # If using openai provider (cloud OpenAI)
+            elif provider == "openai":
+                # Cloud OpenAI - no special configuration needed
+                pass
             
             # If using ollama provider with custom base URL
             elif provider == "ollama":
@@ -274,8 +281,9 @@ class LLMGateway:
                     # Query /v1/models endpoint for actual deployed models
                     queried_models = await self._query_openai_models(api_base)
                     if queried_models:
-                        # Prefix with provider name for LiteLLM format
-                        models = [f"openai/{model}" for model in queried_models]
+                        # Use openai_chat/ prefix for local OpenAI-compatible servers
+                        # This tells LiteLLM to use the /v1/chat/completions endpoint
+                        models = [f"openai_chat/{model}" for model in queried_models]
                         queried_successfully = True
                 else:
                     # Cloud OpenAI - query actual available models
