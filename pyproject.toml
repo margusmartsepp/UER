@@ -1,6 +1,6 @@
 [project]
 name = "uer"
-version = "4.2.0"
+version = "4.2.1"
 description = "UER - Universal Expert Registry: Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration"
 readme = "README.md"
 requires-python = ">=3.11"
