@@ -7,9 +7,12 @@ Monitors for volunteer, conformity, and destructive behaviors in multi-agent sys
 import logging
 import re
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from .behavior_storage import BehaviorStorage
 
 logger = logging.getLogger(__name__)
 
@@ -56,11 +59,21 @@ class AgentVerseBehaviorMonitor:
     - Sandbagging (van der Weij 2024)
     """
 
-    def __init__(self):
-        """Initialize behavior monitor with AgentVerse patterns."""
+    def __init__(self, storage: "BehaviorStorage | None" = None, auto_persist: bool = False):
+        """Initialize behavior monitor with AgentVerse patterns.
+
+        Args:
+            storage: Optional BehaviorStorage for persistent logging
+            auto_persist: If True, automatically persist logs to storage
+        """
         self.behavior_logs: list[BehaviorLog] = []
         self.patterns = self._initialize_patterns()
-        logger.info("AgentVerseBehaviorMonitor initialized with enhanced patterns")
+        self.storage = storage
+        self.auto_persist = auto_persist
+        logger.info(
+            f"AgentVerseBehaviorMonitor initialized with enhanced patterns "
+            f"(auto_persist: {auto_persist})"
+        )
 
     def _initialize_patterns(self) -> list[BehaviorPattern]:
         """Initialize behavior detection patterns.
@@ -319,6 +332,15 @@ class AgentVerseBehaviorMonitor:
                         f"Behavior detected: {pattern.name} in {agent_id} "
                         f"(matched: {matched_text})"
                     )
+
+                # Auto-persist to storage if enabled
+                if self.auto_persist and self.storage:
+                    import asyncio
+
+                    try:
+                        asyncio.create_task(self.storage.store_log(behavior_log))
+                    except Exception as e:
+                        logger.warning(f"Failed to auto-persist behavior log: {e}")
 
         return detected_behaviors
 
