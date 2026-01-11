@@ -22,6 +22,8 @@ class LLMGateway:
         """Detect which LLM providers have API keys configured."""
         providers = []
 
+        if os.getenv("CEREBRAS_API_KEY"):
+            providers.append("cerebras")
         if os.getenv("GEMINI_API_KEY"):
             providers.append("gemini")
         if os.getenv("ANTHROPIC_API_KEY"):

@@ -17,14 +17,28 @@ This guide covers how to configure the UER MCP server for different clients and 
 
 | Provider | Get Your API Key | Environment Variable | Free Tier |
 |----------|------------------|---------------------|-----------|
-| **Google Gemini** ⭐ | [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys) | `GEMINI_API_KEY` | ✅ Free tier available |
+| **Cerebras** ⭐ | [cloud.cerebras.ai/platform](https://cloud.cerebras.ai/platform) | `CEREBRAS_API_KEY` | ✅ Free tier available (fast inference) |
+| **LM Studio (Local)** 🏠 | [lmstudio.ai](https://lmstudio.ai) | `OPENAI_API_BASE` | ✅ 100% Free - runs locally |
+| **Google Gemini** | [aistudio.google.com/api-keys](https://aistudio.google.com/api-keys) | `GEMINI_API_KEY` | ✅ Free tier available |
 | **Anthropic (Claude)** | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) | `ANTHROPIC_API_KEY` | $5 credit for new users |
 | **OpenAI (GPT)** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` | $5 credit for new users |
 | **Azure OpenAI** | [portal.azure.com](https://portal.azure.com/) | `AZURE_API_KEY`, `AZURE_API_BASE` | Requires subscription |
 | **AWS Bedrock** | [console.aws.amazon.com/bedrock](https://console.aws.amazon.com/bedrock/) | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` | Pay-as-you-go |
-| **LM Studio (Local)** 🏠 | [lmstudio.ai](https://lmstudio.ai) | `OPENAI_API_BASE` | ✅ 100% Free - runs locally |
 
-⭐ **Recommended for testing**: Start with Google Gemini (free cloud) or LM Studio (free local)!
+⭐ **Recommended for testing**: Start with Cerebras (free cloud, very fast) or LM Studio (free local)!
+
+### How to Get a Cerebras API Key (Free)
+
+1. Visit [https://cloud.cerebras.ai/platform](https://cloud.cerebras.ai/platform)
+2. Sign up or sign in with your account
+3. Navigate to API Keys section
+4. Create a new API key
+5. Copy your key and add it to your MCP configuration (see below)
+
+**Free tier includes**:
+- Very fast inference (optimized hardware)
+- Generous token limits
+- Access to Llama models
 
 ### How to Get a Gemini API Key (Free)
 
@@ -76,7 +90,7 @@ This guide covers how to configure the UER MCP server for different clients and 
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Mac: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-**Minimal Configuration (Gemini only):**
+**Minimal Configuration (Cerebras only):**
 ```json
 {
   "mcpServers": {
@@ -84,7 +98,7 @@ This guide covers how to configure the UER MCP server for different clients and 
       "command": "npx",
       "args": ["uer-mcp@latest"],
       "env": {
-        "GEMINI_API_KEY": "AIza_your_actual_key_here"
+        "CEREBRAS_API_KEY": "your_actual_key_here"
       }
     }
   }
@@ -99,6 +113,7 @@ This guide covers how to configure the UER MCP server for different clients and 
       "command": "npx",
       "args": ["uer-mcp@latest"],
       "env": {
+        "CEREBRAS_API_KEY": "your_actual_key_here",
         "GEMINI_API_KEY": "AIza_your_actual_key_here",
         "ANTHROPIC_API_KEY": "sk-ant-your_actual_key_here",
         "OPENAI_API_KEY": "sk-your_actual_key_here",
