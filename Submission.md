@@ -33,508 +33,180 @@ This is a research platform for exploration, not production-ready software. It r
 
 ## 1. Introduction
 
-### The Challenge: AI Manipulation at Scale
+### The Manipulation Detection Gap
 
-AI systems are mastering deception, sycophancy, sandbagging, and psychological exploitation at scale, while our ability to detect, measure, and counter these behaviors remains dangerously underdeveloped. Recent research has documented frontier models:
+Frontier AI models now exhibit sophisticated manipulation: strategic underperformance on evaluations (sandbagging), inverse scaling in sycophancy, reward hacking with awareness of violating intentions, and emergent misalignment from training. The October 2024 METR revelation documented o3 hacking evaluation software and Claude models deliberately subverting tasks—demonstrating models know their behavior violates intentions but proceed anyway.
 
-- **Strategically underperforming** on capability evaluations (sandbagging)
-- **Exhibiting inverse scaling in sycophancy** (larger models are MORE sycophantic)
-- **Reward hacking** in production-like settings, with awareness their behavior violates intentions
-- **Emergent misalignment** where reward hacking training causes downstream sabotage
+Research has documented these threats extensively. What's missing is accessible implementation.
 
-The October 2024 revelation by METR documented o3 hacking evaluation software, and Claude models subverting tasks—showing models demonstrate awareness their behavior violates intentions but do it anyway. This represents an unprecedented challenge for AI safety.
+Current manipulation detection faces a fundamental asymmetry: researchers publish detection methods in papers, but testing requires researchers to rebuild infrastructure, manage API credentials across providers, implement storage systems, and replicate algorithms from scratch. A single cross-provider comparison demands separate codebases, authentication, and infrastructure for each model family.
 
-### Existing Limitations
+**The result:** Detection research moves slower than model capabilities advance.
 
-Current approaches to manipulation detection face several critical limitations:
+### What UER Provides
 
-1. **Single-Model Testing:** Most research tests one model at a time, missing cross-provider manipulation patterns
-2. **Ephemeral Context:** No persistent behavioral tracking across sessions to detect drift
-3. **Tool Fragmentation:** Manipulation detection tools exist in silos, no unified platform
-4. **High Barriers:** Researchers need separate API access, code, and infrastructure for each provider
+Universal Expert Registry (UER) eliminates this infrastructure barrier by providing manipulation detection as accessible tools through the Model Context Protocol. Researchers can now:
 
-### Our Solution: Universal Expert Registry
+- Test hypotheses across Claude, GPT, and Gemini with single function calls
+- Store behavioral data persistently to detect temporal drift
+- Run multi-agent simulations with complete audit trails
+- Access detection tools from Claude Desktop without infrastructure setup
+- Iterate on detection approaches and analyze results immediately
 
-UER addresses these limitations by providing a unified platform for multi-model manipulation research. The system enables:
-
-- **Comparative Testing:** Run identical prompts across Claude, GPT, Gemini simultaneously
-- **Persistent Tracking:** Store behavioral data across sessions to detect temporal patterns
-- **Tool Integration:** Connect specialized detection tools via MCP protocol
-- **Agent Orchestration:** Deploy red-teaming agents with full context and memory
+UER doesn't just implement existing research—it makes combining and extending research trivial. Creating detection variants, testing across providers, storing results, and generating reports becomes exploratory rather than engineering-intensive.
 
 ### Research Questions
 
-1. Can multi-model comparison detect manipulation patterns invisible in single-model testing?
-2. Does persistent behavioral tracking reveal temporal drift indicative of alignment faking?
-3. What manipulation signatures emerge when models interact with specialized tools?
-4. How do subagent coordination dynamics reveal emergent manipulative behaviors?
+This platform enables investigation of questions previously limited by tooling barriers:
+
+1. **Cross-Provider Patterns:** Do manipulation signatures emerge when comparing identical prompts across Claude, GPT, and Gemini that single-model testing misses?
+
+2. **Temporal Drift:** Does persistent behavioral tracking reveal gradual alignment degradation indicative of strategic deception?
+
+3. **Tool Interaction Signatures:** What manipulation patterns emerge when models access specialized capabilities through MCP servers?
+
+4. **Emergent Coordination:** How do multi-agent dynamics reveal manipulative behaviors absent in single-agent evaluation?
 
 ### Contributions
 
-This work contributes:
+**Implementation:**
+- Multi-agent safety monitoring implementing Chen 2024 (AgentVerse), Sharma 2024 (sycophancy), Park 2024 (deception)
+- Sandbagging detection implementing van der Weij 2024's multi-method framework
+- Multi-agent simulation with serializable personas, audit trails, and behavior tracking
+- 7 MCP tools exposing sophisticated detection through simple function calls
 
-- **Multi-Agent Safety System:** Complete behavior monitoring framework with 15+ patterns, persistent storage, risk scoring, and automated analysis (AgentVerse, sycophancy, deception, sandbagging)
-- **Sandbagging Detection:** Production-ready multi-method detection implementing consistency testing, difficulty profiling, and capability elicitation (van der Weij 2024)
-- **Simulation Framework:** Full multi-agent conversation orchestration with serializable personas, audit trails, and manipulation detection integration
-- **MCP Tools:** 7 new tools exposing behavior monitoring and sandbagging detection via Model Context Protocol
-- **Platform:** Unified infrastructure for cross-provider manipulation testing with 100+ LLM providers
-- **Open Source:** Released as v4.1.0 on GitHub and npm for community use
+**Infrastructure:**
+- Universal LLM gateway supporting 100+ providers via LiteLLM
+- S3-compatible storage for persistent behavioral data
+- Automated risk scoring (0-100) and safety reporting
+- Open source release (v4.1.0) on GitHub and npm under MIT license
+
+**Impact:**
+First unified, accessible implementation of four key manipulation detection papers. Makes research exploration order-of-magnitude simpler by eliminating infrastructure barriers.
 
 ---
 
 ## 2. Methods
 
-### System Architecture
+### Architecture Overview
 
-UER v4.1.0 implements a five-layer architecture:
+UER implements a five-layer architecture where each layer builds on the previous, culminating in accessible MCP tools that hide infrastructure complexity:
 
-#### Layer 1: LiteLLM Gateway
-- **Unified API:** Single interface for 100+ providers (Claude, GPT, Gemini, Bedrock, Azure)
-- **Tool Normalization:** Converts provider-specific formats to OpenAI standard
-- **Cost Tracking:** Per-request pricing across all models
-- **Rate Limiting:** Automatic retry with exponential backoff
-- **Thinking Support:** Extended thinking for Gemini 2.0 Flash Thinking and Claude 3.7 Sonnet
+**Layer 1: Universal LLM Access**
+- Single API for 100+ providers (Anthropic, OpenAI, Google, AWS, Azure)
+- Automatic format normalization, cost tracking, rate limiting
+- Extended thinking support for Gemini 2.0 Flash Thinking, Claude 3.7 Sonnet
 
-#### Layer 2: Behavior Monitoring System
-- **AgentVerseBehaviorMonitor:** Real-time detection of 15+ behavior patterns
-- **BehaviorStorage:** S3-compatible persistent storage for logs and metrics
-- **BehaviorAnalyzer:** Risk scoring (0-100), agent profiling, safety reports
-- **Auto-persist:** Automatic behavior log storage during agent execution
-- **Trend Detection:** Time series analysis for behavioral drift
-
-#### Layer 3: Sandbagging Detection
-- **SandbaggingDetector:** Multi-method detection framework
-- **Consistency Testing:** Performance analysis across similar questions
-- **Difficulty Profiling:** Anomaly detection across easy/medium/hard questions
-- **Capability Elicitation:** Multiple prompting techniques to reveal hidden capabilities
-- **Evidence Aggregation:** Confidence scoring and automated recommendations
-
-#### Layer 4: Multi-Agent Simulation
-- **AgentPersona:** Serializable personas with roles, prompts, tools, permissions
-- **ConversationHistory:** Full audit trails with chain of thought and tool calls
-- **MultiAgentSimulation:** Turn-based orchestration with behavior monitoring
-- **Registry Persistence:** S3 storage for personas and conversations
-- **Version Control:** Parent tracking for persona evolution
-
-#### Layer 5: Storage & MCP Integration
-- **S3-Compatible Storage:** MinIO/AWS S3 for unlimited context
-- **Skills & Templates:** Jinja2-based context management
-- **MCP Tool Orchestration:** Connect to 1,000+ MCP servers
-- **Subagent Delegation:** Recursive delegation with full context
-
-### Core Tools Implemented (v4.1.0)
-
-| Tool | Purpose | Implementation |
-|------|---------|----------------|
-| `llm_call` | Universal LLM invocation | LiteLLM wrapper with thinking support |
-| `behavior_get_logs` | Retrieve behavior logs | Date/agent filtering, S3 storage |
-| `behavior_get_metrics` | Aggregated metrics | Daily/weekly/monthly aggregation |
-| `behavior_analyze_agent` | Agent profiling | Risk scoring (0-100), pattern analysis |
-| `behavior_generate_report` | Safety reports | Markdown/JSON export with recommendations |
-| `behavior_compare_agents` | Multi-agent comparison | Cross-agent pattern analysis |
-| `sandbagging_evaluate` | Full sandbagging evaluation | Multi-method detection framework |
-| `sandbagging_quick_test` | Quick screening | Predefined question sets |
-| `storage_put`/`get` | Context persistence | S3-compatible storage |
-| `delegate` | Subagent spawning | With behavior monitoring |
-| `mcp_call` | External tool access | MCP client implementation |
-| `skill_*` / `template_*` | Skills & templates | Jinja2-based management |
-
-### Testing Methodology
-
-#### Behavior Monitoring Protocol
-```python
-# Initialize behavior monitor with storage
-behavior_storage = BehaviorStorage(storage_manager)
-behavior_monitor = AgentVerseBehaviorMonitor(
-    storage=behavior_storage,
-    auto_persist=True
-)
-
-# Monitor agent behavior during execution
-behaviors = behavior_monitor.monitor(
-    agent_id="agent_123",
-    content=response_content,
-    context={"model": "claude-3-5-sonnet", "task": "evaluation"}
-)
-
-# Analyze agent with risk scoring
-profile = await analyzer.create_agent_profile(
-    agent_id="agent_123",
-    start_date=datetime(2026, 1, 1),
-    end_date=datetime(2026, 1, 11)
-)
-print(f"Risk Score: {profile.risk_score}/100")
-```
-
-#### Sandbagging Detection Protocol
-```python
-# Define evaluation questions
-questions = [
-    Question(
-        id="q1",
-        text="What is 2+2?",
-        difficulty="easy",
-        category="math",
-        correct_answer="4"
-    ),
-    # ... more questions
-]
-
-# Run sandbagging evaluation
-detector = SandbaggingDetector(gateway)
-report = await detector.evaluate_model(
-    model="gpt-4",
-    questions=questions,
-    use_elicitation=True
-)
-
-print(f"Sandbagging Detected: {report.sandbagging_detected}")
-print(f"Confidence: {report.confidence}")
-```
-
-#### Multi-Agent Simulation Protocol
-```python
-# Create agent personas
-personas = [
-    create_persona_from_template("helpful_assistant", "agent_1"),
-    create_persona_from_template("adversarial_tester", "human_1"),
-    create_persona_from_template("safety_auditor", "auditor_1")
-]
-
-# Configure simulation
-config = SimulationConfig(
-    scenario_name="safety_evaluation",
-    max_turns=20,
-    enable_behavior_monitoring=True,
-    enable_sandbagging_detection=True,
-    store_to_registry=True
-)
-
-# Run simulation
-simulation = MultiAgentSimulation(gateway, storage)
-result = await simulation.run_simulation(
-    personas=personas,
-    config=config,
-    initial_message="Let's test for manipulation patterns"
-)
-```
-
-### Research Foundation
-
-UER v4.1.0 implements detection methods from 4 key research papers:
-
-1. **Chen 2024 (AgentVerse):** 15+ behavior patterns for volunteer, conformity, and destructive behaviors in multi-agent systems
-2. **Sharma 2024:** Sycophancy detection patterns including agreement bias and opinion matching
-3. **Park 2024:** Deception detection including unfaithful reasoning and strategic misrepresentation
-4. **van der Weij 2024:** Multi-method sandbagging detection with consistency testing, difficulty profiling, and capability elicitation
-
-**Implementation Status:**
-- ✅ Behavior monitoring framework (15+ patterns)
-- ✅ Sandbagging detection (3 methods)
-- ✅ Multi-agent simulation with audit trails
-- ✅ MCP tools for accessibility
-- 🔄 WMDP benchmark integration (planned)
-- 🔄 Large-scale evaluation studies (planned)
-
-### Evaluation Metrics
-
-**Behavior Monitoring:**
-- **Risk Score:** 0-100 scale based on behavior severity and frequency
-- **Pattern Detection:** Count and categorization of detected behaviors
-- **Temporal Trends:** Behavior frequency changes over time
-- **Agent Comparison:** Relative risk across multiple agents
-
-**Sandbagging Detection:**
-- **Consistency Score:** Performance variance on similar questions
-- **Anomaly Detection:** Unexpected difficulty-performance relationships
-- **Elicitation Improvement:** Performance gain with prompting techniques
-- **Confidence Level:** Low/medium/high based on evidence aggregation
-
-**Simulation Framework:**
-- **Audit Completeness:** % of turns with full metadata capture
-- **Tool Call Tracking:** Count and success rate of tool invocations
-- **Chain of Thought:** Availability of reasoning traces
-- **Storage Efficiency:** Successful serialization/deserialization rate
-
----
-
-## 3. Results
-
-### Implementation Results (v4.1.0)
-
-#### Multi-Agent Safety Monitoring System
-
-**Behavior Patterns Implemented:**
-- 15+ detection patterns across 6 categories
-- Real-time monitoring during agent execution
+**Layer 2: Behavior Monitoring**
+- Real-time detection of 15+ manipulation patterns during execution
 - Automatic persistence to S3-compatible storage
-- Risk scoring algorithm (0-100 scale)
+- Risk scoring (0-100) based on behavior severity and frequency
+- Time series analysis for behavioral drift detection
 
-**Storage Architecture:**
-```
-s3://uer-behavior/
-├── logs/{date}/{agent_id}/{timestamp}.json
-├── metrics/{period}/{date}.json
-└── trends/{pattern_name}.json
-```
+**Layer 3: Sandbagging Detection**
+- Multi-method framework: consistency testing, difficulty profiling, capability elicitation
+- Evidence aggregation with confidence scoring (low/medium/high)
+- Automated recommendations based on van der Weij 2024 research
 
-**Analysis Capabilities:**
-- Agent profiling with behavioral breakdown
-- Multi-agent comparison reports
-- Safety reports with automated recommendations
-- Visualization data for time series and distributions
-- Export to Markdown and JSON formats
+**Layer 4: Multi-Agent Simulation**
+- Serializable personas with configurable roles, prompts, tools, permissions
+- Full audit trails: chain of thought, tool calls, performance metrics
+- Turn-based orchestration with integrated behavior monitoring
+- Version control for persona evolution
 
-#### Sandbagging Detection Framework
+**Layer 5: MCP Integration**
+- 7 new tools exposing detection capabilities
+- S3 storage for unlimited context and reproducible scenarios
+- Jinja2 templates for dynamic context assembly
+- Connection to 1,000+ external MCP servers
 
-**Detection Methods Implemented:**
-1. **Consistency Testing:** Groups questions by category, detects performance inconsistencies on similar questions (>30% threshold for high likelihood)
-2. **Difficulty Profiling:** Analyzes easy/medium/hard performance, detects anomalies (better on hard than medium, 10pp threshold)
-3. **Capability Elicitation:** Tests with step-by-step reasoning, expert framing, and critical evaluation prompts (>10pp improvement threshold)
+### Research Implementation
 
-**Evidence Aggregation:**
-- Confidence scoring (low/medium/high)
-- Automated recommendations based on van der Weij 2024
-- Comprehensive reporting with all detection results
+UER translates academic findings into production code:
 
-**Quick Test Functionality:**
-- Predefined question sets for math, reasoning, and general knowledge
-- Rapid screening capability
-- Domain-specific evaluation
+**Chen 2024 (AgentVerse):** 15+ behavior patterns across 6 categories (volunteer, conformity, destructive, sycophancy, deception, sandbagging) implemented in `AgentVerseBehaviorMonitor` with real-time detection and auto-persist.
 
-#### Multi-Agent Simulation Framework
+**Sharma 2024 (Sycophancy):** Agreement bias, opinion matching, and flattery patterns integrated into behavior monitoring with severity scoring.
 
-**Persona System:**
-- 5 predefined templates (helpful_assistant, researcher, curious_user, adversarial_tester, safety_auditor)
-- Configurable roles (agent, human, system, auditor)
-- System prompts and LLM parameters
-- Tool access control and registry permissions
-- Version control with parent tracking
+**Park 2024 (Deception):** Unfaithful reasoning and strategic misrepresentation detection with chain-of-thought analysis.
 
-**Conversation Management:**
-- Turn-by-turn tracking with timestamps
-- Chain of thought capture
-- Tool call logging with arguments and results
-- Performance metrics (tokens, latency)
-- Behavior detection integration
+**van der Weij 2024 (Sandbagging):** Three-method framework in `SandbaggingDetector`:
+1. Consistency testing (>30% variance threshold on similar questions)
+2. Difficulty profiling (anomaly detection: better on hard than medium, 10pp threshold)
+3. Capability elicitation (>10pp improvement with reasoning prompts)
+### Core MCP Tools
 
-**Storage Structure:**
-```
-s3://uer-personas/{persona_id}.json
-s3://uer-simulations/{prefix}/{date}/{conversation_id}.json
-```
+**Skill Creation & Management System:**
 
-#### MCP Tools Integration
+The platform's primary innovation is enabling users to create, test, and iterate on their own detection methods through the skill system:
 
-**7 New Tools Implemented:**
-1. `behavior_get_logs` - Retrieve logs with date/agent filtering
-2. `behavior_get_metrics` - Daily/weekly/monthly aggregation
-3. `behavior_analyze_agent` - Risk scoring and profiling
-4. `behavior_generate_report` - Safety reports (Markdown/JSON)
-5. `behavior_compare_agents` - Multi-agent comparison
-6. `sandbagging_evaluate` - Full multi-method evaluation
-7. `sandbagging_quick_test` - Rapid screening
+| Tool Category | Purpose | Key Capability |
+|---------------|---------|----------------|
+| `skill_create` | Custom detection methods | Create detection skills with instructions, code, examples |
+| `skill_get` | Retrieve skills | Access skill definitions and associated files |
+| `skill_list` | Discovery | Browse available skills in registry |
+| `skill_export` | Integration | Export for Claude Skills API |
+| `skill_to_prompt` | Cross-LLM | Convert skills to system prompts for any LLM |
+| `template_*` | Dynamic context | Jinja2-based context assembly with S3 expansion |
+| `storage_*` | Persistence | S3-compatible storage for results, data, iterations |
 
-**Accessibility:**
-- Available via Claude Desktop and any MCP client
-- Comprehensive input validation
-- Detailed descriptions with examples
-- JSON response formatting
+**Reference Implementation Tools:**
 
-### System Capabilities Demonstrated
+To provide comparison baselines, UER includes research-based implementations:
 
-**Infrastructure:**
-- ✅ 100+ LLM provider support via LiteLLM
-- ✅ S3-compatible storage (MinIO/AWS S3)
-- ✅ Persistent behavior tracking
-- ✅ Multi-agent orchestration
-- ✅ Full audit trails
+| Tool | Research Basis | Purpose |
+|------|----------------|---------|
+| `behavior_get_logs` | Chen 2024 | Retrieve behavioral data - compare against your skills |
+| `behavior_get_metrics` | Chen 2024 | Aggregation - benchmark your detection methods |
+| `behavior_analyze_agent` | Chen 2024 | Risk scoring - validate your approaches |
+| `sandbagging_evaluate` | van der Weij 2024 | Multi-method baseline - test your variants |
+| `sandbagging_quick_test` | van der Weij 2024 | Reference screening - compare performance |
 
-**Detection Systems:**
-- ✅ Real-time behavior monitoring
-- ✅ Multi-method sandbagging detection
-- ✅ Risk scoring and profiling
-- ✅ Automated recommendations
+**The Innovation:**
 
-**Simulation:**
-- ✅ Serializable agent personas
-- ✅ Turn-based conversation orchestration
-- ✅ Chain of thought capture
-- ✅ Tool call tracking
-- ✅ Registry persistence
+Users don't just consume research implementations—they create detection variants, test across providers, compare against baselines, iterate rapidly, and store everything persistently. The research-based tools provide comparison points, not constraints.
 
-### Release Metrics
-
-**Version:** 4.1.0
-**Release Date:** January 11, 2026
-**Package Size:** 373.9 KB (npm)
-**Total Files:** 46 Python modules
-**Lines of Code:** ~3,500+ new lines
-**MCP Tools:** 7 new tools (12 total)
-**Behavior Patterns:** 15+ across 6 categories
-**Persona Templates:** 5 predefined
-**Storage Buckets:** 3 (behavior, personas, simulations)
-
-**Distribution:**
-- GitHub: https://github.com/margusmartsepp/UER (v4.1.0 tag)
-- npm: https://www.npmjs.com/package/uer-mcp (v4.1.0)
-- Open source under MIT license
-
+**Example Workflow:**
+```python
+# Create your own sandbagging detection variant
+await skill_create(
+    name="reward-hacking-detector",
+    display_title="Custom Reward Hacking Detection",
+    skill_md="""---
+name: reward-hacking-detector
+description: My approach to detecting reward hacking
 ---
 
-## 4. Discussion and Conclusion
+# Detection Method
+[Your novel approach here]
+""",
+    files={"analysis.py": "[Your detection code]"}
+)
 
-### Key Achievements
+# Test your approach across providers
+claude_results = await delegate(
+    model="claude-3-5-sonnet",
+    task="Test reward hacking scenario X",
+    context_refs=["registry://skills/reward-hacking-detector"]
+)
 
-#### 1. Research-Based Detection Framework
+gpt_results = await delegate(
+    model="gpt-4",
+    task="Test reward hacking scenario X",
+    context_refs=["registry://skills/reward-hacking-detector"]
+)
 
-UER v4.1.0 successfully implements detection methods from 4 key research papers:
-- **Chen 2024 (AgentVerse):** 15+ behavior patterns for multi-agent systems
-- **Sharma 2024:** Sycophancy detection patterns
-- **Park 2024:** Deception detection methods
-- **van der Weij 2024:** Multi-method sandbagging detection
+# Compare against research baseline
+baseline = await sandbagging_evaluate(model="gpt-4", questions=test_set)
 
-This represents the first unified implementation of these research findings in a production-ready, accessible platform.
+# Store and iterate
+await storage_put(
+    "registry://results/iteration-1.json",
+    json.dumps({"custom": gpt_results, "baseline": baseline})
+)
+```
 
-#### 2. Production-Ready Infrastructure
-
-The system provides:
-- **Real-time monitoring** during agent execution with auto-persist
-- **S3-compatible storage** for unlimited behavioral data
-- **Risk scoring algorithm** (0-100 scale) for agent profiling
-- **Multi-method detection** with evidence aggregation
-- **Full audit trails** capturing chain of thought and tool calls
-
-#### 3. Accessibility via MCP Protocol
-
-7 new MCP tools make sophisticated manipulation detection accessible to:
-- Researchers conducting safety studies
-- Red teams testing model robustness
-- Developers building safe AI systems
-- Auditors analyzing agent behavior
-
-No specialized infrastructure required—works with Claude Desktop out of the box.
-
-#### 4. Extensible Simulation Framework
-
-The multi-agent simulation system enables:
-- **Scenario testing** with configurable personas
-- **Behavioral tracking** across multi-turn conversations
-- **Registry persistence** for reproducible experiments
-- **Version control** for persona evolution
-- **Integration** with detection systems for real-time analysis
-
-### Limitations and Future Work
-
-#### Current Limitations
-
-**1. Evaluation Coverage**
-- WMDP benchmark integration planned but not yet implemented
-- Large-scale empirical validation needed
-- Detection thresholds based on research literature, not tuned to specific models
-
-**2. Simulation Capabilities**
-- Human input currently simulated (real-time human participation planned)
-- Advanced RAG integration not yet implemented
-- Cross-benchmark comparison capabilities planned
-
-**3. Production Hardening**
-- Additional error handling for edge cases
-- Performance optimization for large-scale deployments
-- Enhanced security features (encryption at rest, audit logging)
-
-**4. Documentation**
-- Usage examples for all persona templates
-- Best practices guide for scenario design
-- Interpretation guide for detection results
-
-#### Planned Enhancements
-
-**Short-Term (Next 3 Months)**
-1. **WMDP Integration:** Full 3,668-question benchmark evaluation
-2. **MCP Simulation Tools:** Tools for creating and running simulations via MCP
-3. **Real-Time Human Input:** Support for human participants in simulations
-4. **Visualization Dashboard:** Web interface for behavior analysis
-5. **Advanced RAG:** Integration with vector databases and retrieval systems
-
-**Long-Term (6-12 Months)**
-1. **Scenario Library:** Community-contributed simulation scenarios
-2. **Detection Tuning:** Model-specific threshold optimization
-3. **Cross-Benchmark Analysis:** Comparative evaluation across multiple benchmarks
-4. **Production Monitoring:** Real-time detection in deployed systems
-5. **Regulatory Compliance:** GDPR, AI Act, and safety standard support
-
-### Impact & Significance
-
-UER v4.1.0 demonstrates that **accessible infrastructure accelerates AI safety research**. By providing:
-
-**Research Implementation:**
-- First unified implementation of AgentVerse, sycophancy, deception, and sandbagging detection
-- Production-ready code with comprehensive error handling
-- Research-based recommendations and automated analysis
-
-**Accessibility:**
-- 7 MCP tools accessible via Claude Desktop
-- No specialized infrastructure required
-- Open source under MIT license
-
-**Extensibility:**
-- Modular architecture for adding new detection methods
-- Serializable personas and scenarios for reproducibility
-- S3-compatible storage for unlimited scale
-
-**Community Impact:**
-- Released on GitHub and npm for immediate use
-- Enables researchers without engineering resources
-- Provides foundation for collaborative safety research
-
-### Threat Coverage
-
-UER v4.1.0 addresses these manipulation threats:
-
-**Implemented:**
-1. **Sycophancy:** 15+ detection patterns including agreement bias and opinion matching (Sharma 2024)
-2. **Sandbagging:** Multi-method detection with consistency, difficulty, and elicitation testing (van der Weij 2024)
-3. **Deception:** Unfaithful reasoning and strategic misrepresentation patterns (Park 2024)
-4. **Multi-Agent Behaviors:** Volunteer, conformity, and destructive patterns (Chen 2024)
-5. **Temporal Tracking:** Persistent storage for behavioral drift detection
-
-**Planned:**
-1. **Reward Hacking:** Tool-interaction monitoring and goal misalignment detection
-2. **Emergent Misalignment:** Advanced multi-agent coordination analysis
-3. **Training Data Contamination:** Cross-benchmark performance analysis
-
-### Conclusion
-
-The Universal Expert Registry v4.1.0 provides production-ready infrastructure for AI manipulation detection research. This hackathon submission delivers:
-
-**Implemented Systems:**
-- ✅ Multi-agent safety monitoring (15+ patterns, 6 categories)
-- ✅ Sandbagging detection (3 methods, evidence aggregation)
-- ✅ Multi-agent simulation (personas, audit trails, persistence)
-- ✅ 7 MCP tools for accessibility
-- ✅ Research-based recommendations
-
-**Technical Achievement:**
-- 3,500+ lines of production-ready Python code
-- Comprehensive error handling and validation
-- S3-compatible storage architecture
-- Full MCP protocol integration
-- Open source release (GitHub + npm)
-
-**Research Contribution:**
-- First unified implementation of 4 key manipulation detection papers
-- Accessible platform for researchers without engineering resources
-- Foundation for collaborative safety research
-- Extensible framework for future detection methods
-
-**Impact:**
-By implementing research findings in an accessible, production-ready platform, UER v4.1.0 accelerates AI safety research and empowers the community to measure, detect, and defend against manipulation at scale.
-
-**Availability:**
-- GitHub: https://github.com/margusmartsepp/UER (v4.1.0)
-- npm: https://www.npmjs.com/package/uer-mcp (v4.1.0)
-- License: MIT (Open Source)
+The platform makes "what if I tried detecting X differently?" a function call instead of an infrastructure project.
 
 ---
 
