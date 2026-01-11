@@ -1,7 +1,7 @@
 {
   "name": "uer-mcp",
   "version": "4.2.0",
-  "description": "Universal Expert Registry - Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration with multi-agent safety monitoring",
+  "description": "[Hackathon Proof-of-Concept] Universal Expert Registry - Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration. Tested with Anthropic, Cerebras, OpenAI, Gemini, LM Studio, Ollama.",
   "main": "index.js",
   "bin": {
     "uer-mcp": "bin/uer-mcp.js"
@@ -51,7 +51,7 @@
   "mcp": {
     "displayName": "Universal Expert Registry",
     "icon": "img/uer.jpg",
-    "description": "Multi-provider LLM gateway with 100+ providers, S3-compatible storage, MCP tool orchestration, multi-agent safety monitoring, and sandbagging detection.",
+    "description": "[Proof-of-Concept] Multi-provider LLM gateway with 100+ providers via LiteLLM. Extensively tested: Anthropic, Cerebras, OpenAI, Gemini, LM Studio, Ollama. Other providers may need adjustments. Version numbers track features, not production readiness.",
     "features": [
       "Multi-Agent Safety Monitoring - 15+ behavior patterns (AgentVerse, sycophancy, deception, sandbagging)",
       "Sandbagging Detection - Multi-method detection with consistency testing and capability elicitation",
