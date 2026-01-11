@@ -8,6 +8,8 @@ from .sandbagging import (
     CapabilityElicitation,
     ConsistencyTest,
     DifficultyProfile,
+    Question,
+    Response,
     SandbaggingDetector,
     SandbaggingReport,
 )
@@ -18,4 +20,6 @@ __all__ = [
     "DifficultyProfile",
     "CapabilityElicitation",
     "SandbaggingReport",
+    "Question",
+    "Response",
 ]
