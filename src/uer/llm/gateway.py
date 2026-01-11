@@ -185,7 +185,12 @@ class LLMGateway:
             response = await acompletion(model=model, messages=messages, **call_kwargs)
 
             # Convert to dict (LiteLLM returns ModelResponse object)
-            return response.model_dump()
+            # Suppress Pydantic warnings for local servers (LM Studio, etc.) that don't
+            # return all OpenAI fields like 'refusal'
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+                return response.model_dump()
 
         except Exception as e:
             raise RuntimeError(f"LLM call failed for model '{model}': {str(e)}") from e
