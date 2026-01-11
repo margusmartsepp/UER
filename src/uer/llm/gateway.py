@@ -165,11 +165,10 @@ class LLMGateway:
             if provider == "lm_studio":
                 api_base = os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE")
                 if api_base:
-                    # Set LM_STUDIO_API_BASE environment variable for LiteLLM
-                    os.environ["LM_STUDIO_API_BASE"] = api_base
-                    # LM Studio API key is optional (usually empty)
-                    if not os.getenv("LM_STUDIO_API_KEY"):
-                        os.environ["LM_STUDIO_API_KEY"] = ""
+                    # Pass api_base and api_key as parameters (per LiteLLM docs)
+                    call_kwargs["api_base"] = api_base
+                    # LM Studio may require a dummy API key even when not validating
+                    call_kwargs["api_key"] = os.getenv("LM_STUDIO_API_KEY", "dummy")
             
             # If using openai provider (cloud OpenAI)
             elif provider == "openai":
