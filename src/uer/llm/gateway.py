@@ -292,7 +292,8 @@ class LLMGateway:
             
             elif provider == "lm_studio":
                 # Local OpenAI-compatible server (LM Studio, etc.)
-                api_base = os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE")
+                # Prefer LM_STUDIO_API_BASE for clarity, fallback to OPENAI_API_BASE for compatibility
+                api_base = os.getenv("LM_STUDIO_API_BASE") or os.getenv("OPENAI_API_BASE")
                 if api_base:
                     provider_type = "local"
                     server_url = api_base
@@ -334,6 +335,13 @@ class LLMGateway:
                 if queried_models:
                     models = [f"ollama/{model}" for model in queried_models]
                     queried_successfully = True
+            
+            else:
+                # Generic fallback for any other provider detected via env vars
+                # This handles providers like cohere, together_ai, replicate, etc.
+                # that we haven't implemented specific query methods for yet
+                provider_type = "cloud"  # Assume cloud unless proven otherwise
+                # Models will fall back to example models below
 
             # Fall back to example models if query failed or not applicable
             if not models:

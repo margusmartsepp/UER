@@ -25,7 +25,7 @@
         "CEREBRAS_API_KEY": "your-key-here",
         "GEMINI_API_KEY": "your-key-here", // etc
         // LM Studio (optional) - local models
-        "OPENAI_API_BASE": "http://localhost:1234/v1"
+        "LM_STUDIO_API_BASE": "http://localhost:1234/v1"
       }
     }
   }
@@ -392,6 +392,40 @@ This project uses [LiteLLM](https://github.com/BerriAI/litellm) as the unified L
 | Ollama | `ollama/llama3.1:8b-instruct-q4_K_M` (local) |
 
 **Note:** Model names change frequently. Use the discovery tools above to find current models.
+
+### Advanced Configuration
+
+**Multi-Instance Providers:**
+LiteLLM supports multiple instances of the same provider (e.g., multiple Azure deployments). Configure via environment variables:
+
+```bash
+# Multiple Azure deployments
+AZURE_API_KEY="key1"
+AZURE_API_BASE="https://endpoint1.openai.azure.com"
+AZURE_API_VERSION="2023-05-15"
+
+# Use model format: azure/<deployment-name>
+# Example: azure/gpt-4-deployment
+```
+
+**Generic Provider Support:**
+Any provider with a configured API key will be detected automatically. If we don't have a specific query implementation, example models will be provided. Supported providers include:
+
+- Cohere (`COHERE_API_KEY`)
+- Together AI (`TOGETHERAI_API_KEY`)
+- Replicate (`REPLICATE_API_KEY`)
+- Hugging Face (`HUGGINGFACE_API_KEY`)
+- And 90+ more - see [LiteLLM docs](https://docs.litellm.ai/docs/providers/)
+
+**Fallback Chains:**
+LiteLLM supports automatic fallbacks. Configure via model list:
+```python
+# In your LLM call, specify fallback models
+model="gpt-4o"  # Primary
+fallbacks=["claude-sonnet-4-5", "gemini-2.5-flash"]  # Fallbacks
+```
+
+See [PROVIDERS.md](PROVIDERS.md) for detailed configuration examples.
 
 ## Project Structure
 

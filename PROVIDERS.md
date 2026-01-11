@@ -211,6 +211,55 @@ The full provider list includes specialized categories beyond the major players:
 
 Each follows the same prefix pattern: `provider/model-name`. The LiteLLM documentation at docs.litellm.ai/docs/providers maintains the authoritative list.
 
+## Multi-instance provider configuration
+
+**Multiple deployments of the same provider** are common in enterprise environments. Azure customers often have multiple regional deployments, AWS users may have multiple accounts, and teams may run multiple local LM Studio instances.
+
+**Azure multi-instance example:**
+```python
+# Primary Azure deployment
+os.environ["AZURE_API_KEY"] = "key1"
+os.environ["AZURE_API_BASE"] = "https://eastus.openai.azure.com/"
+os.environ["AZURE_API_VERSION"] = "2023-05-15"
+
+# Use deployment-specific model names
+response = completion(model="azure/gpt-4-eastus", messages=[...])
+response = completion(model="azure/gpt-4-westus", messages=[...])
+```
+
+**LM Studio multi-instance example:**
+```python
+# Multiple local servers on different ports
+os.environ["LM_STUDIO_API_BASE"] = "http://localhost:1234/v1"  # Primary
+
+# For additional instances, use direct api_base parameter
+response = completion(
+    model="lm_studio/llama-3.1-8b",
+    api_base="http://localhost:1234/v1",
+    messages=[...]
+)
+
+response = completion(
+    model="lm_studio/mistral-7b",
+    api_base="http://localhost:5678/v1",  # Different port
+    messages=[...]
+)
+```
+
+**Generic provider support:** UER automatically detects any provider with a configured API key. If we don't have a specific model query implementation, example models are provided. This means you can use **any of LiteLLM's 100+ providers** immediately:
+
+```python
+# These work automatically with just the API key
+os.environ["COHERE_API_KEY"] = "..."
+os.environ["TOGETHERAI_API_KEY"] = "..."
+os.environ["REPLICATE_API_KEY"] = "..."
+os.environ["HUGGINGFACE_API_KEY"] = "..."
+
+# Use standard prefix/model format
+response = completion(model="cohere_chat/command-r-plus", messages=[...])
+response = completion(model="together_ai/meta-llama/Llama-3-70b-chat-hf", messages=[...])
+```
+
 ## Best practices for multi-provider architectures
 
 **Credential management**: Use environment variables with the `os.environ/VAR_NAME` syntax in config.yaml. For enterprise clouds, prefer managed identities over static credentials—Azure's `DefaultAzureCredential`, AWS's IRSA/instance roles, or GCP's Workload Identity.
@@ -226,7 +275,7 @@ litellm_settings:
 
 **Production deployment**: Always use Redis for state sharing across proxy instances. Enable `pre_call_checks` to filter unhealthy deployments before requests. Set appropriate `rpm` limits per deployment to enable intelligent routing.
 
-**Self-hosted integration**: Use `hosted_vllm/` prefix for vLLM servers (the `vllm/` prefix is deprecated). Remember `/v1` suffix in api_base URLs for Llamafile. LM Studio may require a dummy API key even when not validating credentials.
+**Self-hosted integration**: Use `hosted_vllm/` prefix for vLLM servers (the `vllm/` prefix is deprecated). Remember `/v1` suffix in api_base URLs for Llamafile. LM Studio prefers `LM_STUDIO_API_BASE` but also supports `OPENAI_API_BASE` for compatibility.
 
 ## Conclusion
 
