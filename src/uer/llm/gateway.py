@@ -33,6 +33,11 @@ class LLMGateway:
         if os.getenv("AZURE_API_KEY"):
             providers.append("azure")
 
+        # LM Studio and other local OpenAI-compatible servers
+        # These work without API keys when OPENAI_API_BASE is set
+        if os.getenv("OPENAI_API_BASE"):
+            providers.append("openai")  # LiteLLM uses openai/ prefix for local servers
+
         return providers
 
     async def call(
@@ -64,12 +69,17 @@ class LLMGateway:
         provider = model.split("/")[0]
 
         # Check if provider is available
+        # Special case: openai provider works with OPENAI_API_BASE (LM Studio, etc.) without API key
         if provider not in self.available_providers:
-            raise RuntimeError(
-                f"Provider '{provider}' not available. "
-                f"Please set the appropriate API key environment variable. "
-                f"Available providers: {', '.join(self.available_providers) or 'none'}"
-            )
+            if provider == "openai" and os.getenv("OPENAI_API_BASE"):
+                # Allow openai provider with custom base URL (local servers)
+                pass
+            else:
+                raise RuntimeError(
+                    f"Provider '{provider}' not available. "
+                    f"Please set the appropriate API key environment variable. "
+                    f"Available providers: {', '.join(self.available_providers) or 'none'}"
+                )
 
         try:
             # Call LiteLLM with all parameters

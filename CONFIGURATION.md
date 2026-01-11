@@ -22,8 +22,9 @@ This guide covers how to configure the UER MCP server for different clients and 
 | **OpenAI (GPT)** | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` | $5 credit for new users |
 | **Azure OpenAI** | [portal.azure.com](https://portal.azure.com/) | `AZURE_API_KEY`, `AZURE_API_BASE` | Requires subscription |
 | **AWS Bedrock** | [console.aws.amazon.com/bedrock](https://console.aws.amazon.com/bedrock/) | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` | Pay-as-you-go |
+| **LM Studio (Local)** 🏠 | [lmstudio.ai](https://lmstudio.ai) | `OPENAI_API_BASE` | ✅ 100% Free - runs locally |
 
-⭐ **Recommended for testing**: Start with Google Gemini - it's free and easy to set up!
+⭐ **Recommended for testing**: Start with Google Gemini (free cloud) or LM Studio (free local)!
 
 ### How to Get a Gemini API Key (Free)
 
@@ -37,6 +38,35 @@ This guide covers how to configure the UER MCP server for different clients and 
 - 10-15 requests/minute
 - 250K tokens/minute
 - 250-1000 requests/day (varies by model)
+
+### How to Use LM Studio (100% Free, Runs Locally)
+
+**LM Studio** lets you run LLMs locally on your computer - no API keys, no internet required, completely free!
+
+1. **Download LM Studio**: Visit [lmstudio.ai](https://lmstudio.ai) and download for your OS
+2. **Download a Model**:
+   - Open LM Studio
+   - Go to the "Discover" tab
+   - Search for models (recommended: `llama-3.1-8b`, `mistral-7b`, `phi-3`)
+   - Click download (models are 4-8GB typically)
+3. **Start the Local Server**:
+   - Load your downloaded model
+   - Click "Start Server" (default port: 1234)
+   - You'll see: `HTTP server listening on port 1234`
+4. **Configure UER**:
+   - Add `OPENAI_API_BASE` to your MCP config (see below)
+   - No API key needed!
+
+**Advantages**:
+- ✅ 100% free, no usage limits
+- ✅ Works offline
+- ✅ Complete privacy - data never leaves your computer
+- ✅ No rate limits or quotas
+
+**Requirements**:
+- 8GB+ RAM (16GB recommended)
+- 10GB+ disk space for models
+- Modern CPU (GPU optional but faster)
 
 ## Client-Specific Configuration
 
@@ -82,6 +112,32 @@ This guide covers how to configure the UER MCP server for different clients and 
   }
 }
 ```
+
+**LM Studio Configuration (Local Models):**
+```json
+{
+  "mcpServers": {
+    "uer": {
+      "command": "npx",
+      "args": ["uer-mcp@latest"],
+      "env": {
+        "OPENAI_API_BASE": "http://localhost:1234/v1"
+      }
+    }
+  }
+}
+```
+
+**Note**: No API key needed for LM Studio! Just set `OPENAI_API_BASE` to your local server URL.
+
+**Custom Port**: If you changed LM Studio's port (e.g., to 8080), use:
+```json
+"OPENAI_API_BASE": "http://localhost:8080/v1"
+```
+
+**Usage**: Call models with `openai/` prefix:
+- `llm_call` with `model="openai/local-model"` (any name works)
+- LM Studio uses whatever model is currently loaded
 
 **After configuration:**
 1. Quit Claude Desktop completely
