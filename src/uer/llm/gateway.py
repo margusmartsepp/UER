@@ -144,8 +144,8 @@ class LLMGateway:
         # Check if provider is available
         # Special cases for local servers
         if provider not in self.available_providers:
-            if provider == "openai_chat" and os.getenv("OPENAI_API_BASE"):
-                # Allow openai_chat prefix for local OpenAI-compatible servers (LM Studio, etc.)
+            if provider == "lm_studio" and (os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE")):
+                # Allow lm_studio prefix for LM Studio servers
                 pass
             elif provider == "openai" and os.getenv("OPENAI_API_BASE"):
                 # Allow openai prefix with custom base URL (local servers)
@@ -158,17 +158,18 @@ class LLMGateway:
                 )
 
         try:
-            # Configure LiteLLM for local OpenAI-compatible servers
+            # Configure LiteLLM for local and cloud providers
             call_kwargs = kwargs.copy()
             
-            # If using openai_chat provider (local OpenAI-compatible servers like LM Studio)
-            if provider == "openai_chat":
-                api_base = os.getenv("OPENAI_API_BASE")
+            # If using lm_studio provider (LM Studio local server)
+            if provider == "lm_studio":
+                api_base = os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE")
                 if api_base:
-                    # Set api_base for LiteLLM to route to local server
-                    call_kwargs["api_base"] = api_base
-                    # Set dummy api_key (local servers usually ignore it)
-                    call_kwargs["api_key"] = os.getenv("OPENAI_API_KEY", "sk-dummy-key-for-local-server")
+                    # Set LM_STUDIO_API_BASE environment variable for LiteLLM
+                    os.environ["LM_STUDIO_API_BASE"] = api_base
+                    # LM Studio API key is optional (usually empty)
+                    if not os.getenv("LM_STUDIO_API_KEY"):
+                        os.environ["LM_STUDIO_API_KEY"] = ""
             
             # If using openai provider (cloud OpenAI)
             elif provider == "openai":
@@ -274,16 +275,16 @@ class LLMGateway:
                 # Check for OPENAI_API_BASE (LM Studio, local servers, etc.)
                 api_base = os.getenv("OPENAI_API_BASE")
                 if api_base:
-                    # This is a local OpenAI-compatible server
+                    # This is a local OpenAI-compatible server (LM Studio, etc.)
                     provider_type = "local"
                     server_url = api_base
 
                     # Query /v1/models endpoint for actual deployed models
                     queried_models = await self._query_openai_models(api_base)
                     if queried_models:
-                        # Use openai_chat/ prefix for local OpenAI-compatible servers
-                        # This tells LiteLLM to use the /v1/chat/completions endpoint
-                        models = [f"openai_chat/{model}" for model in queried_models]
+                        # Use lm_studio/ prefix for LM Studio servers
+                        # LiteLLM recognizes this prefix and routes correctly
+                        models = [f"lm_studio/{model}" for model in queried_models]
                         queried_successfully = True
                 else:
                     # Cloud OpenAI - query actual available models
