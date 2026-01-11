@@ -6,7 +6,7 @@
   [![npm version](https://badge.fury.io/js/uer-mcp.svg)](https://www.npmjs.com/package/uer-mcp)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-  **ASI-Level Experts, Infinite Memory, Any Client**
+  **Multi-Provider LLM Gateway • S3-Compatible Storage • MCP Tool Orchestration**
 </div>
 
 ---
@@ -49,24 +49,24 @@ For Claude Desktop, Goose, Codex, Amp, and other clients, see [CONFIGURATION.md]
 ---
 
 An MCP server that provides:
-1. **Universal LLM Access** - Call any LLM (Claude, GPT, Gemini, Bedrock, Azure, local models) through LiteLLM
-2. **MCP Tool Orchestration** - Connect to 1000+ MCP servers (filesystem, databases, browsers, etc.)
-3. **Shared Memory/Context** - Break context window limits via external storage with URI references
-4. **Subagent Delegation** - Spawn subagents with full chat history, not just single messages
+1. **Multi-Provider LLM Access** - Call 100+ LLM providers (Anthropic, OpenAI, Google, Azure, AWS Bedrock, local models) through LiteLLM
+2. **MCP Tool Integration** - Connect to other MCP servers for extended functionality
+3. **S3-Compatible Storage** - Store context and data in MinIO, AWS S3, or other S3-compatible backends
+4. **Prompt Injection Detection** - Basic content validation and security warnings
 
 ## Why This Exists
 
-LLMs have fundamental limitations:
-- **Single message I/O**: 32-64k tokens max
-- **Context window**: 200k-2M tokens
-- **No persistent memory**: Forget between sessions
-- **No expert access**: Can't use specialized tools
+MCP clients often need:
+- **Multiple LLM providers** - Different models for different tasks
+- **Persistent storage** - Save context between sessions
+- **Tool integration** - Connect to specialized MCP servers
+- **Configuration flexibility** - Support cloud and self-hosted solutions
 
-Traditional multi-agent approaches waste tokens by copying full context to each subagent. This registry solves it by:
-- Storing context externally (unlimited)
-- Passing URI references instead of full data (50 tokens vs 50k)
-- Building complete chat histories for subagents
-- Persisting across sessions
+UER provides:
+- Unified interface to 100+ LLM providers via LiteLLM
+- S3-compatible storage for context and data
+- MCP client for calling other MCP servers
+- Support for enterprise clouds (Azure, AWS, GCP) and self-hosted (Ollama, LM Studio)
 
 ## Architecture
 
@@ -86,9 +86,9 @@ graph TB
 
         subgraph litellm["LiteLLM Gateway"]
             C1["100+ LLM providers"]
-            C2["Native MCP Gateway"]
-            C3["A2A Protocol support"]
-            C4["Cost tracking, rate limiting, fallbacks"]
+            C2["Model routing"]
+            C3["Error handling"]
+            C4["Response formatting"]
         end
 
         subgraph store["Context Store"]
@@ -148,10 +148,10 @@ llm_call(model="ollama/llama3.1:8b-instruct-q4_K_M", messages=[...])
 ```
 
 Features included:
-- Automatic fallbacks between providers
-- Cost tracking per request
-- Rate limit handling with retries
-- Tool/function calling across all providers
+- Unified interface across providers
+- Support for cloud and self-hosted models
+- Automatic model detection and caching
+- Error handling and response formatting
 
 ### 2. MCP Tool Integration
 
@@ -167,27 +167,24 @@ mcp_call(server="postgres", tool="query", args={"sql": "SELECT * FROM users"})
 mcp_call(server="context7", tool="search", args={"query": "LiteLLM API reference"})
 ```
 
-### 3. Shared Context (The Killer Feature)
+### 3. S3-Compatible Storage
 
-Store data externally, pass URI references:
+Store data in S3-compatible backends:
 
 ```python
-# Store large document (200k tokens) in S3-compatible storage
-put("s3://uer-context/analysis/doc_001.json", {"content": large_document})
-
-# Pass only URI to subagent (50 tokens!)
-delegate(
-    model="anthropic/claude-sonnet-4-5-20250929",
-    task="Analyze the document",
-    context_refs=["s3://uer-context/analysis/doc_001.json"]
+# Store data in MinIO, AWS S3, or other S3-compatible storage
+storage_put(
+    key="analysis/doc_001.json",
+    content={"content": large_document},
+    bucket="uer-context"
 )
 
-# Subagent retrieves full content from storage
-# Result stored back to S3
-# Parent retrieves summary only
+# Retrieve data
+data = storage_get(
+    key="analysis/doc_001.json",
+    bucket="uer-context"
+)
 ```
-
-**Token savings: 99.9%** for multi-agent workflows.
 
 **Storage backends:**
 - **Local:** MinIO (S3-compatible, Docker-based)
@@ -269,33 +266,14 @@ With storage disabled:
 
 The server will start successfully without storage, and LLMs won't see storage-related tools in their tool list.
 
-### 4. Full Chat History for Subagents
+### 4. Prompt Injection Detection
 
-Build complete conversation context, not just single messages:
+Basic content validation and security warnings:
 
 ```python
-delegate(
-    model="openai/gpt-5-mini",
-    messages=[
-        {"role": "system", "content": "You are a code reviewer..."},
-        {"role": "user", "content": "Review this code for security issues"},
-        {"role": "assistant", "content": "I'll analyze the code..."},
-        {"role": "user", "content": "Focus on SQL injection risks"}
-    ],
-    tools=[...],  # MCP tools available to subagent
-    context_refs=["registry://context/codebase"]  # Large context via URI
-)
-```
-
-### 5. Continuation Across Sessions
-
-Complex tasks can span multiple messages and sessions:
-
-```
-Message 1: Start analysis → Progress: 20% → {{continuation: registry://plan/001}}
-Message 2: Continue → Progress: 60% → {{continuation: registry://plan/001}}
-[Next day]
-Message 3: Continue → Complete! Here's your report...
+# Detects potential prompt injection patterns
+# Provides risk assessment and warnings
+# Helps identify suspicious content in user inputs
 ```
 
 ## Usage
@@ -333,12 +311,15 @@ User: "Ask both Gemini and Claude Sonnet to write a haiku about programming"
 → Returns both haikus for comparison
 ```
 
-**3. Store and Share Context:**
+**3. Store and Retrieve Data:**
 ```
-User: "Store this document in the registry and have Gemini summarize it"
-→ put("registry://context/doc", {...})
-→ delegate(model="gemini/gemini-3-flash-preview", context_refs=["registry://context/doc"])
-→ Returns: Summary without re-sending full document
+User: "Store this configuration in S3"
+→ storage_put(key="config/settings.json", content={...})
+→ Returns: Confirmation with storage details
+
+User: "Retrieve the configuration"
+→ storage_get(key="config/settings.json")
+→ Returns: Configuration data
 ```
 
 ## Troubleshooting
@@ -370,25 +351,25 @@ User: "Store this document in the registry and have Gemini summarize it"
 | Tool | Description |
 |------|-------------|
 | `llm_call` | Call any LLM via LiteLLM (100+ providers) |
+| `llm_list_models` | List available models from configured providers |
+| `llm_config_guide` | Get configuration help for LLM providers |
 | `mcp_call` | Call any configured MCP server tool |
-| `put` | Store data/context in registry |
-| `get` | Retrieve data/context from registry |
-| `search` | Search MCP servers, skills, or stored context |
-| `delegate` | Spawn subagent with full chat history |
-| `subscribe` | Watch for async results |
-| `cancel` | Cancel subscription or execution |
+| `mcp_list_tools` | List available MCP tools |
+| `mcp_servers` | List configured MCP servers |
+| `storage_put` | Store data in S3-compatible storage |
+| `storage_get` | Retrieve data from storage |
+| `storage_list` | List stored objects |
+| `storage_delete` | Delete stored objects |
 
 ## LiteLLM Integration
 
 This project uses [LiteLLM](https://github.com/BerriAI/litellm) as the unified LLM gateway, providing:
 
 - **100+ LLM providers** through single interface
-- **Native MCP Gateway** with permission management
-- **A2A Protocol** for agent-to-agent communication
-- **Cost tracking** per request with spend reports
-- **Rate limiting** with automatic retries
-- **Fallbacks** between providers on failure
-- **Tool/function calling** normalized across providers
+- **Unified API format** across all providers
+- **Support for cloud and self-hosted models**
+- **Automatic model detection** and caching
+- **Error handling** and response formatting
 
 ### Supported Providers
 
