@@ -47,7 +47,14 @@ if storage_manager.is_available():
     behavior_tools.init_behavior_tools(storage_manager)
     # Initialize skills and templates managers with storage backend
     # Backend will be created lazily on first use
-    logger.info("Storage backend enabled with behavior monitoring")
+    try:
+        backend = storage_manager._ensure_backend()
+        skills_tools.init_skills(backend)
+        template_tools.init_templates(backend)
+        logger.info("Storage backend enabled with behavior monitoring, skills, and templates")
+    except Exception as e:
+        logger.warning(f"Failed to initialize storage backend: {e}")
+        logger.info("Skills and templates will not be available")
 else:
     logger.info(
         "Storage backend disabled - storage/skills/template/behavior tools will not be available"
