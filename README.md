@@ -54,11 +54,12 @@ An actual developer setup for Claude could look like (docker exists and minio is
 }
 ```
 **Storage Setup (Optional):**
-- Quick start: Run `docker-compose up -d` to start MinIO locally
+- **Not using Docker?** Add `"STORAGE_ENABLED": "false"` to your env config to disable storage features
+- **Using Docker:** Run `docker-compose up -d` to start MinIO locally
 - See [Storage Configuration Options](#storage-configuration-options) for detailed setup (Docker MinIO, AWS S3, or manual configuration)
 - Storage enables skills, templates, and behavior monitoring features
 
-> **Storage is optional**: This config works immediately for LLM and MCP features. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
+> **Storage is optional**: This config works immediately for LLM and MCP features. If you're not using Docker and get storage errors, add `"STORAGE_ENABLED": "false"` to your env config. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
 
 > **Required**: Add at least one API key to the `env` section. See [CONFIGURATION.md](CONFIGURATION.md) for all provider links and detailed setup.
 

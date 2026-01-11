@@ -9,24 +9,30 @@ from typing import Any
 
 from mcp.types import Tool, TextContent
 
-from ..storage import StorageBackend
+from ..storage import StorageBackend, StorageManager
 from ..storage.skills import SkillsManager
 
 
-# Global skills manager (will be initialized by server)
+# Global storage manager and skills manager (will be initialized by server)
+_storage_manager: StorageManager | None = None
 _skills: SkillsManager | None = None
 
 
-def init_skills(backend: StorageBackend):
-    """Initialize global skills manager."""
-    global _skills
-    _skills = SkillsManager(backend)
+def init_skills_manager(storage_manager: StorageManager):
+    """Initialize global skills manager with storage manager."""
+    global _storage_manager
+    _storage_manager = storage_manager
 
 
 def get_skills() -> SkillsManager:
-    """Get global skills manager."""
+    """Get global skills manager, creating it lazily on first use."""
+    global _skills
     if _skills is None:
-        raise RuntimeError("Skills manager not initialized. Call init_skills() first.")
+        if _storage_manager is None:
+            raise RuntimeError("Skills manager not initialized. Call init_skills_manager() first.")
+        # Create backend and skills manager lazily on first use
+        backend = _storage_manager._ensure_backend()
+        _skills = SkillsManager(backend)
     return _skills
 
 

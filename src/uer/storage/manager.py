@@ -83,7 +83,8 @@ class StorageManager:
         if self._backend_initialized:
             raise StorageError(
                 "Storage backend is not available. "
-                "Set STORAGE_ENABLED=true and configure storage credentials."
+                "If you're not using Docker/MinIO, add STORAGE_ENABLED=false to your env config. "
+                "Otherwise, start MinIO with 'docker-compose up -d' or configure custom storage credentials."
             )
 
         self._backend_initialized = True

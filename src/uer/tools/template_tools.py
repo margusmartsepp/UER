@@ -9,24 +9,30 @@ from typing import Any
 
 from mcp.types import Tool, TextContent
 
-from ..storage import StorageBackend
+from ..storage import StorageBackend, StorageManager
 from ..storage.templates import TemplateManager
 
 
-# Global template manager (will be initialized by server)
+# Global storage manager and template manager (will be initialized by server)
+_storage_manager: StorageManager | None = None
 _templates: TemplateManager | None = None
 
 
-def init_templates(backend: StorageBackend):
-    """Initialize global template manager."""
-    global _templates
-    _templates = TemplateManager(backend)
+def init_templates_manager(storage_manager: StorageManager):
+    """Initialize global template manager with storage manager."""
+    global _storage_manager
+    _storage_manager = storage_manager
 
 
 def get_templates() -> TemplateManager:
-    """Get global template manager."""
+    """Get global template manager, creating it lazily on first use."""
+    global _templates
     if _templates is None:
-        raise RuntimeError("Template manager not initialized. Call init_templates() first.")
+        if _storage_manager is None:
+            raise RuntimeError("Template manager not initialized. Call init_templates_manager() first.")
+        # Create backend and template manager lazily on first use
+        backend = _storage_manager._ensure_backend()
+        _templates = TemplateManager(backend)
     return _templates
 
 
