@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from ..llm.gateway import LLMGateway
 from ..storage.manager import StorageManager
+from .behavior_monitor import AgentVerseBehaviorMonitor, BehaviorLog
 from .context import ContextManager
 
 logger = logging.getLogger(__name__)
@@ -29,26 +30,16 @@ class DelegationResult(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
 
 
-class BehaviorLog(BaseModel):
-    """Log entry for multi-agent behavior monitoring."""
-
-    timestamp: datetime = Field(default_factory=datetime.now)
-    agent_id: str = Field(..., description="Identifier for the agent")
-    behavior_type: str = Field(
-        ..., description="Type of behavior (volunteer, conformity, destructive, etc.)"
-    )
-    description: str = Field(..., description="Description of the behavior")
-    context: dict[str, Any] = Field(default_factory=dict, description="Context information")
-    severity: str = Field(default="info", description="Severity level (info, warning, critical)")
-
-
 class SubagentOrchestrator:
     """Orchestrates subagent delegation with multi-agent behavior monitoring.
 
-    Inspired by Chen 2024 AgentVerse research on emergent behaviors:
-    - Volunteer behaviors: Agents offering unsolicited assistance
-    - Conformity behaviors: Agents aligning with group goals
+    Enhanced with AgentVerse framework (Chen 2024) for comprehensive behavior detection:
+    - Volunteer behaviors: Spontaneous peer assistance, unsolicited tool use
+    - Conformity behaviors: Alignment with group goals, response to criticism
     - Destructive behaviors: Actions leading to undesired outcomes
+    - Sycophancy: Excessive agreement without critical analysis (Sharma 2024)
+    - Deception: Strategic deception, unfaithful reasoning (Park 2024)
+    - Sandbagging: Capability hiding, selective underperformance (van der Weij 2024)
     """
 
     def __init__(
@@ -65,8 +56,8 @@ class SubagentOrchestrator:
         self.gateway = gateway or LLMGateway()
         self.storage = storage or StorageManager()
         self.context_manager = ContextManager(storage=self.storage)
-        self.behavior_logs: list[BehaviorLog] = []
-        logger.info("SubagentOrchestrator initialized with ContextManager")
+        self.behavior_monitor = AgentVerseBehaviorMonitor()
+        logger.info("SubagentOrchestrator initialized with AgentVerse behavior monitoring")
 
     async def delegate(
         self,
@@ -137,9 +128,14 @@ class SubagentOrchestrator:
                 content = message.get("content")
                 tool_calls = message.get("tool_calls")
 
-                # Check for destructive behavior patterns
+                # Monitor behavior patterns with enhanced AgentVerse detector
                 if content:
-                    self._monitor_behavior(agent_id, content, "response", iterations)
+                    self.behavior_monitor.monitor(
+                        agent_id=agent_id,
+                        content=content,
+                        context={"message_type": "response", "model": model},
+                        iteration=iterations,
+                    )
 
                 # If no tool calls, we're done
                 if not tool_calls:
@@ -162,7 +158,7 @@ class SubagentOrchestrator:
                         stored_at=stored_at,
                         metadata={
                             "agent_id": agent_id,
-                            "behavior_logs": len(self.behavior_logs),
+                            "behavior_summary": self.behavior_monitor.get_summary(agent_id),
                         },
                     )
 
@@ -175,11 +171,15 @@ class SubagentOrchestrator:
                     logger.debug(f"Tool call: {tool_name}")
 
                     # Monitor for volunteer behavior (unsolicited tool use)
-                    self._monitor_behavior(
-                        agent_id,
-                        f"Tool call: {tool_name}",
-                        "tool_use",
-                        iterations,
+                    self.behavior_monitor.monitor(
+                        agent_id=agent_id,
+                        content=f"Tool call: {tool_name}",
+                        context={
+                            "message_type": "tool_use",
+                            "tool_name": tool_name,
+                            "model": model,
+                        },
+                        iteration=iterations,
                     )
 
                     # Add tool result (placeholder)
@@ -201,7 +201,7 @@ class SubagentOrchestrator:
                 iterations=iterations,
                 metadata={
                     "agent_id": agent_id,
-                    "behavior_logs": len(self.behavior_logs),
+                    "behavior_summary": self.behavior_monitor.get_summary(agent_id),
                 },
             )
 
@@ -293,88 +293,41 @@ class SubagentOrchestrator:
             logger.error(f"Failed to store result at {uri}: {e}")
             return uri
 
-    def _monitor_behavior(
-        self, agent_id: str, content: str, behavior_context: str, iteration: int
-    ) -> None:
-        """Monitor agent behavior for emergent patterns.
-
-        Based on Chen 2024 AgentVerse research:
-        - Volunteer: Unsolicited assistance or tool use
-        - Conformity: Alignment with instructions
-        - Destructive: Potentially harmful actions
-
-        Args:
-            agent_id: Agent identifier
-            content: Content to analyze
-            behavior_context: Context of behavior (response, tool_use, etc.)
-            iteration: Current iteration number
-        """
-        content_lower = content.lower()
-
-        # Check for destructive patterns
-        destructive_keywords = [
-            "delete",
-            "remove",
-            "destroy",
-            "override",
-            "bypass",
-            "ignore",
-            "hack",
-        ]
-        if any(keyword in content_lower for keyword in destructive_keywords):
-            self.behavior_logs.append(
-                BehaviorLog(
-                    agent_id=agent_id,
-                    behavior_type="destructive",
-                    description=f"Potentially destructive action detected: {content[:100]}",
-                    context={
-                        "iteration": iteration,
-                        "context": behavior_context,
-                    },
-                    severity="warning",
-                )
-            )
-            logger.warning(f"Destructive behavior detected in {agent_id} at iteration {iteration}")
-
-        # Check for volunteer patterns (unsolicited tool use)
-        if behavior_context == "tool_use" and iteration == 1:
-            self.behavior_logs.append(
-                BehaviorLog(
-                    agent_id=agent_id,
-                    behavior_type="volunteer",
-                    description=f"Proactive tool use: {content[:100]}",
-                    context={
-                        "iteration": iteration,
-                        "context": behavior_context,
-                    },
-                    severity="info",
-                )
-            )
-            logger.debug(f"Volunteer behavior detected in {agent_id} at iteration {iteration}")
-
     def get_behavior_logs(
-        self, agent_id: str | None = None, behavior_type: str | None = None
+        self,
+        agent_id: str | None = None,
+        behavior_type: str | None = None,
+        severity: str | None = None,
     ) -> list[BehaviorLog]:
         """Get behavior logs with optional filtering.
 
         Args:
             agent_id: Optional agent ID to filter by
             behavior_type: Optional behavior type to filter by
+            severity: Optional severity level to filter by
 
         Returns:
             List of matching behavior logs
         """
-        logs = self.behavior_logs
+        return self.behavior_monitor.get_logs(
+            agent_id=agent_id, behavior_type=behavior_type, severity=severity
+        )
 
-        if agent_id:
-            logs = [log for log in logs if log.agent_id == agent_id]
+    def get_behavior_summary(self, agent_id: str | None = None) -> dict[str, Any]:
+        """Get summary statistics of detected behaviors.
 
-        if behavior_type:
-            logs = [log for log in logs if log.behavior_type == behavior_type]
+        Args:
+            agent_id: Optional agent ID to filter by
 
-        return logs
+        Returns:
+            Dictionary with behavior statistics
+        """
+        return self.behavior_monitor.get_summary(agent_id=agent_id)
 
-    def clear_behavior_logs(self) -> None:
-        """Clear all behavior logs."""
-        self.behavior_logs.clear()
-        logger.info("Cleared behavior logs")
+    def clear_behavior_logs(self, agent_id: str | None = None) -> None:
+        """Clear behavior logs.
+
+        Args:
+            agent_id: If provided, only clear logs for this agent
+        """
+        self.behavior_monitor.clear_logs(agent_id=agent_id)

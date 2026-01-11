@@ -36,7 +36,8 @@ mcp_manager = MCPManager(mcp_config)
 storage_manager = StorageManager()
 if storage_manager.is_available():
     storage_tools.init_storage(storage_manager)
-    # Note: skills and templates will be initialized lazily when storage backend is created
+    # Initialize skills and templates managers with storage backend
+    # Backend will be created lazily on first use
     logger.info("Storage backend enabled")
 else:
     logger.info("Storage backend disabled - storage/skills/template tools will not be available")
