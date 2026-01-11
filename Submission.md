@@ -17,19 +17,17 @@
 
 ## Abstract
 
-The Universal Expert Registry (UER) is a comprehensive MCP (Model Context Protocol) server implementing multi-agent safety monitoring, sandbagging detection, and simulation framework for AI manipulation research. Built for the AI Manipulation Hackathon 2026, UER addresses critical gaps in manipulation detection through four integrated systems:
+Universal Expert Registry (UER) is an open-source platform that makes AI manipulation research practical and accessible. Built for the AI Manipulation Hackathon 2026, UER addresses a fundamental challenge: assuming a single auditor model, provider or skill can reliably detect manipulation is unrealistic.
 
-**Multi-Agent Safety Monitoring:** Implements 15+ behavior patterns across 6 categories (volunteer, conformity, destructive, sycophancy, deception, sandbagging) based on Chen 2024 (AgentVerse), Sharma 2024, Park 2024, and van der Weij 2024. Provides persistent S3 storage for behavior logs, automated risk scoring (0-100), and comprehensive safety reports with research-based recommendations.
+UER transforms manipulation detection from fixed systems into iterative research workflows. Researchers can explore ideas like "test reward hacking", rapidly create detection variants, test across multiple providers and models, store results, and generate comparative reports—all from existing MCP clients like Claude Desktop. The platform provides full telemetry (tokens, timing, chain-of-thought) with persistent storage for reproducible scenarios.
 
-**Sandbagging Detection Framework:** Multi-method detection system implementing consistency testing across similar questions, difficulty profiling with anomaly detection, and capability elicitation techniques. Detects strategic underperformance where models intentionally fail evaluations while maintaining general capabilities.
+The framework integrates four capabilities: **multi-agent safety monitoring** implementing research-based behavior patterns (sycophancy, sandbagging, deception, etc.), **simulation infrastructure** with serializable personas and complete audit trails, **universal LLM access** supporting 100+ providers through LiteLLM, and **MCP orchestration** enabling dynamic tool discovery and configuration.
 
-**Multi-Agent Simulation:** Complete conversation orchestration with serializable agent personas (agent, human, system, auditor roles), full audit trails capturing chain of thought and tool calls, and registry persistence for scenario reuse. Enables accurate simulation of multi-agent interactions with real-time manipulation detection.
+UER makes combining research findings order-of-magnitude simpler. It bridges models to capabilities they lack natively, automates complex multi-provider workflows, and grows with new detection approaches rather than remaining rigid. Developers unfamiliar with specific MCP servers can discover and leverage them for solving novel problems.
 
-**Universal LLM Infrastructure:** Integrates 100+ LLM providers through LiteLLM, S3-compatible storage for unlimited context, MCP tool orchestration for 1,000+ servers, and subagent delegation with behavior monitoring.
+This is a research platform for exploration, not production-ready software. It requires understanding the problem domain but makes sophisticated manipulation research accessible to AI safety researchers and developers through familiar tools.
 
-UER v4.1.0 provides 7 new MCP tools for behavior analysis and sandbagging detection, making sophisticated manipulation research accessible through Claude Desktop and other MCP clients. The system enables comparative testing across providers, temporal drift detection, and automated red-teaming with full transparency.
-
-*Keywords: Multi-agent safety, sandbagging detection, behavior monitoring, AI manipulation, MCP protocol, simulation framework, evaluation integrity*
+*Keywords: AI manipulation detection, multi-agent safety, MCP protocol, sandbagging, research platform, model evaluation*
 
 ---
 
@@ -671,7 +669,7 @@ UER/
 
 - **Marco Lackovic (role: Team Operations & Cultural Lead):** Facilitated team cohesion and operational morale during high-pressure development phases. Acted as a project steward, ensuring alignment with the hackathon’s collaborative goals and maintaining communication flow.
 
-- **Zane Estere (role: Manual QA & Platform Validation Lead):** Headed MacOS deployment testing and cross-vendor API validation. Strengthened system resilience by designing edge-case test suites and executing storage-layer stress tests during iterative builds.
+- **Zane Estere Gruntmane (role: Manual QA & Platform Validation Lead):** Headed MacOS deployment testing and cross-vendor API validation. Strengthened system resilience by designing edge-case test suites and executing storage-layer stress tests during iterative builds.
 
 - **Yash Ramani (role: Integration & Systems Specialist):** Managed cross-environment validation across Windsurf and VS Code Insiders. Served as a key technical sounding board, providing peer reviews and strategic feedback that refined the final system architecture.
 
