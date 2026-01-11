@@ -1,6 +1,6 @@
 {
   "name": "uer-mcp",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "[Hackathon Proof-of-Concept] Universal Expert Registry - Multi-provider LLM gateway, S3-compatible storage, and MCP tool orchestration. Tested with Anthropic, Cerebras, OpenAI, Gemini, LM Studio, Ollama.",
   "main": "index.js",
   "bin": {
