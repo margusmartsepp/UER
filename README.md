@@ -370,16 +370,28 @@ This project uses [LiteLLM](https://github.com/BerriAI/litellm) as the unified L
 - **Automatic model detection** and caching
 - **Error handling** and response formatting
 
-### Supported Providers
+### Provider & Model Discovery
+
+**Find supported providers and models:**
+- 📖 **[PROVIDERS.md](PROVIDERS.md)** - Complete guide to LiteLLM provider integrations and configuration
+- 🌐 **[LiteLLM Provider Docs](https://docs.litellm.ai/docs/providers/)** - Official documentation for all 100+ providers
+- 🔧 **`llm_list_models` tool** - Query available models from your configured providers
+- 🔧 **`llm_config_guide` tool** - Get configuration help for specific providers
+
+### Supported Providers (Examples)
 
 | Provider | Model Examples |
 |----------|---------------|
 | Anthropic | `anthropic/claude-sonnet-4-5-20250929`, `anthropic/claude-opus-4-5-20251101` |
-| OpenAI | `openai/gpt-5.2`, `openai/gpt-5-mini`, `openai/gpt-5.2-codex` |
-| Google | `gemini/gemini-3-flash-preview`, `gemini/gemini-3-pro-preview` |
+| OpenAI | `openai/gpt-4o`, `openai/o3-mini` |
+| Google | `gemini/gemini-2.5-flash`, `gemini/gemini-2.0-flash-exp` |
+| Cerebras | `cerebras/llama-3.3-70b`, `cerebras/qwen-3-235b-a22b-instruct-2507` |
 | Azure | `azure/gpt-4-deployment` |
 | AWS Bedrock | `bedrock/anthropic.claude-3-sonnet` |
-| Local | `ollama/llama3.1:8b-instruct-q4_K_M`, `lm_studio/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF` |
+| LM Studio | `lm_studio/meta-llama-3.1-8b-instruct` (local) |
+| Ollama | `ollama/llama3.1:8b-instruct-q4_K_M` (local) |
+
+**Note:** Model names change frequently. Use the discovery tools above to find current models.
 
 ## Project Structure
 

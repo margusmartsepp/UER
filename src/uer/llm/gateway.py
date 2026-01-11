@@ -56,8 +56,8 @@ class LLMGateway:
         "VERTEX_PROJECT": "vertex_ai",
         # Ollama (local)
         "OLLAMA_API_BASE": "ollama",
-        # LM Studio and other local OpenAI-compatible servers
-        "OPENAI_API_BASE": "openai",
+        # LM Studio (local OpenAI-compatible)
+        "LM_STUDIO_API_BASE": "lm_studio",
     }
 
     def __init__(self) -> None:
@@ -102,10 +102,13 @@ class LLMGateway:
             if os.getenv(env_var):
                 providers.add(provider_name)
 
-        # Special case: OpenAI provider is available if either API key OR API base is set
-        # (for LM Studio and other local OpenAI-compatible servers)
-        if os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_API_BASE"):
+        # OpenAI cloud provider requires API key
+        if os.getenv("OPENAI_API_KEY"):
             providers.add("openai")
+        
+        # LM Studio / local OpenAI-compatible servers use OPENAI_API_BASE
+        if os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE"):
+            providers.add("lm_studio")
 
         # Check config registry for additional providers
         configured_providers = self.config_registry.list_configured_providers()
@@ -279,10 +282,21 @@ class LLMGateway:
                 # Check for OPENAI_API_BASE (LM Studio, local servers, etc.)
                 api_base = os.getenv("OPENAI_API_BASE")
                 if api_base:
-                    # This is a local OpenAI-compatible server (LM Studio, etc.)
+                    # Skip - this will be handled as lm_studio provider below
+                    continue
+                else:
+                    # Cloud OpenAI - query actual available models
+                    provider_type = "cloud"
+                    models = await self._query_openai_cloud_models()
+                    queried_successfully = bool(models)
+            
+            elif provider == "lm_studio":
+                # Local OpenAI-compatible server (LM Studio, etc.)
+                api_base = os.getenv("OPENAI_API_BASE") or os.getenv("LM_STUDIO_API_BASE")
+                if api_base:
                     provider_type = "local"
                     server_url = api_base
-
+                    
                     # Query /v1/models endpoint for actual deployed models
                     queried_models = await self._query_openai_models(api_base)
                     if queried_models:
@@ -290,11 +304,6 @@ class LLMGateway:
                         # LiteLLM recognizes this prefix and routes correctly
                         models = [f"lm_studio/{model}" for model in queried_models]
                         queried_successfully = True
-                else:
-                    # Cloud OpenAI - query actual available models
-                    provider_type = "cloud"
-                    models = await self._query_openai_cloud_models()
-                    queried_successfully = bool(models)
 
             elif provider == "gemini":
                 # Cloud Gemini - query actual available models
