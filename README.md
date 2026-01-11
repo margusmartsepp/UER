@@ -15,7 +15,10 @@
 
 ---
 
-**Standard config** works in most MCP clients:
+## Quick Start
+
+In your MCP client configuration file, you can add the UER server. Here is an example configuration:
+
 > **Quick Start**: Get a free Cerebras API key at [cloud.cerebras.ai/platform](https://cloud.cerebras.ai/platform) under apikeys or use LM Studio (100% free, local)
 
 ```json
@@ -23,12 +26,13 @@
   "mcpServers": {
     "uer": {
       "command": "npx",
-      "args": ["uer-mcp@latest"],
+      "args": [
+        "-y",
+        "uer-mcp@latest"
+      ],
       "env": {
-        // Specific provider key(s)
-        "CEREBRAS_API_KEY": "your-key-here",
-        "GEMINI_API_KEY": "your-key-here", // etc
-        // LM Studio (optional) - local models
+        "CEREBRAS_API_KEY": "<YOUR_TOKEN>",
+        "GEMINI_API_KEY": "<YOUR_TOKEN>",
         "LM_STUDIO_API_BASE": "http://localhost:1234/v1"
       }
     }
@@ -36,9 +40,11 @@
 }
 ```
 
-> **Storage is optional**: This config works immediately for LLM and MCP features. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
-
-> **Required**: Add at least one API key to the `env` section. See [CONFIGURATION.md](CONFIGURATION.md) for all provider links and detailed setup.
+**Configuration Notes:**
+- **Required**: Add at least one LLM provider API key (Cerebras, Gemini, OpenAI, Anthropic, etc.)
+- **Optional**: LM Studio for local models (100% free)
+- **Storage is optional**: This config works immediately for LLM and MCP features. For storage/context features, see [Storage Configuration Options](#storage-configuration-options) below.
+- See [CONFIGURATION.md](CONFIGURATION.md) for all provider links and detailed setup.
 
 [<img src="https://img.shields.io/badge/VS_Code-VS_Code?style=flat-square&label=Install%20Server&color=0098FF" alt="Install in VS Code">](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D) [<img alt="Install in VS Code Insiders" src="https://img.shields.io/badge/VS_Code_Insiders-VS_Code_Insiders?style=flat-square&label=Install%20Server&color=24bfa5">](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522uer%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522uer-mcp%2540latest%2522%255D%257D) [<img src="https://cursor.com/deeplink/mcp-install-dark.svg" alt="Install in Cursor">](https://cursor.com/en/install-mcp?name=UER&config=eyJjb21tYW5kIjoibnB4IHVlci1tY3BAbGF0ZXN0In0%3D) [<img src="https://img.shields.io/badge/Windsurf-Windsurf?style=flat-square&label=Install%20Server&color=0B7A8F" alt="Install in Windsurf">](https://windsurf.com)
 
