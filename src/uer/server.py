@@ -15,7 +15,13 @@ from uer.mcp.config import MCPConfig
 from uer.mcp.manager import MCPManager
 from uer.models.llm import LLMCallRequest
 from uer.storage import StorageManager
-from uer.tools import skills_tools, storage_tools, template_tools
+from uer.tools import (
+    behavior_tools,
+    sandbagging_tools,
+    skills_tools,
+    storage_tools,
+    template_tools,
+)
 from uer.tools.delegate import DelegateToolHandler
 
 # Configure logging
@@ -36,11 +42,17 @@ mcp_manager = MCPManager(mcp_config)
 storage_manager = StorageManager()
 if storage_manager.is_available():
     storage_tools.init_storage(storage_manager)
+    behavior_tools.init_behavior_tools(storage_manager)
     # Initialize skills and templates managers with storage backend
     # Backend will be created lazily on first use
-    logger.info("Storage backend enabled")
+    logger.info("Storage backend enabled with behavior monitoring")
 else:
-    logger.info("Storage backend disabled - storage/skills/template tools will not be available")
+    logger.info(
+        "Storage backend disabled - storage/skills/template/behavior tools will not be available"
+    )
+
+# Initialize sandbagging detection tools
+sandbagging_tools.init_sandbagging_tools(gateway)
 
 # Initialize delegate tool handler for multi-agent orchestration
 delegate_handler = DelegateToolHandler(gateway=gateway, storage=storage_manager)
@@ -307,8 +319,22 @@ async def list_tools() -> list[Tool]:
                 template_tools.get_template_list_tool(),
                 template_tools.get_template_create_tool(),
                 template_tools.get_template_delete_tool(),
+                # Behavior monitoring tools
+                behavior_tools.get_behavior_get_logs_tool(),
+                behavior_tools.get_behavior_get_metrics_tool(),
+                behavior_tools.get_behavior_analyze_agent_tool(),
+                behavior_tools.get_behavior_generate_report_tool(),
+                behavior_tools.get_behavior_compare_agents_tool(),
             ]
         )
+
+    # Sandbagging detection tools (always available with LLM gateway)
+    tools.extend(
+        [
+            sandbagging_tools.get_sandbagging_evaluate_tool(),
+            sandbagging_tools.get_sandbagging_quick_test_tool(),
+        ]
+    )
 
     return tools
 
@@ -361,6 +387,22 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
         return await template_tools.template_create(arguments)
     elif name == "template_delete":
         return await template_tools.template_delete(arguments)
+    # Behavior monitoring tools
+    elif name == "behavior_get_logs":
+        return await behavior_tools.behavior_get_logs(arguments)
+    elif name == "behavior_get_metrics":
+        return await behavior_tools.behavior_get_metrics(arguments)
+    elif name == "behavior_analyze_agent":
+        return await behavior_tools.behavior_analyze_agent(arguments)
+    elif name == "behavior_generate_report":
+        return await behavior_tools.behavior_generate_report(arguments)
+    elif name == "behavior_compare_agents":
+        return await behavior_tools.behavior_compare_agents(arguments)
+    # Sandbagging detection tools
+    elif name == "sandbagging_evaluate":
+        return await sandbagging_tools.sandbagging_evaluate(arguments)
+    elif name == "sandbagging_quick_test":
+        return await sandbagging_tools.sandbagging_quick_test(arguments)
     else:
         raise ValueError(f"Unknown tool: {name}")
 
