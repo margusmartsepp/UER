@@ -190,9 +190,7 @@ class LLMGateway:
         # Check if provider is configured
         if provider not in self.available_providers:
             # Special case for local servers
-            if provider == "openai" and os.getenv("OPENAI_API_BASE"):
-                pass
-            elif provider == "ollama" and os.getenv("OLLAMA_API_BASE"):
+            if provider == "openai" and os.getenv("OPENAI_API_BASE") or provider == "ollama" and os.getenv("OLLAMA_API_BASE"):
                 pass
             else:
                 return {

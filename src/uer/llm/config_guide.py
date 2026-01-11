@@ -288,7 +288,7 @@ class ConfigGuide:
         client_name: str, config_file: str, provider: str, provider_info: dict[str, Any]
     ) -> str:
         """Generate client-specific instructions for setting environment variables."""
-        env_vars = provider_info["required"] + provider_info["optional"]
+        provider_info["required"] + provider_info["optional"]
 
         # Generate example env section
         env_example = "{\n"

@@ -117,9 +117,7 @@ class ConfigRegistry:
             self.config["providers"][provider_name] = config
 
         # Add metadata
-        self.config["providers"][provider_name]["_updated_at"] = datetime.now(
-            UTC
-        ).isoformat()
+        self.config["providers"][provider_name]["_updated_at"] = datetime.now(UTC).isoformat()
 
         # Add security warning if API keys detected
         if has_api_keys:
