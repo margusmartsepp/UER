@@ -271,6 +271,18 @@ class LLMGateway:
                 models = await self._query_gemini_models()
                 queried_successfully = bool(models)
 
+            elif provider == "anthropic":
+                # Cloud Anthropic - query actual available models
+                provider_type = "cloud"
+                models = await self._query_anthropic_models()
+                queried_successfully = bool(models)
+
+            elif provider == "cerebras":
+                # Cloud Cerebras - query actual available models
+                provider_type = "cloud"
+                models = await self._query_cerebras_models()
+                queried_successfully = bool(models)
+
             elif provider == "ollama":
                 # Ollama is always local
                 provider_type = "local"
@@ -399,9 +411,54 @@ class LLMGateway:
             return []
 
     async def _query_anthropic_models(self) -> list[str]:
-        """Query Anthropic API for available models."""
-        # Anthropic doesn't have a public models endpoint, use known models
-        return []
+        """Query Anthropic API for available models.
+        
+        Returns all available models and caches results with timestamp.
+        Always updates timestamp even if models haven't changed.
+        """
+        from datetime import datetime
+
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            # Return from cache if available
+            if "anthropic" in self._model_cache:
+                return self._model_cache["anthropic"]["models"]
+            return []
+
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(
+                    "https://api.anthropic.com/v1/models",
+                    headers={
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                if "data" in data:
+                    # Extract model IDs
+                    model_ids = [m["id"] for m in data["data"]]
+                    models = [f"anthropic/{m}" for m in sorted(model_ids, reverse=True)]
+
+                    # Always update cache with new timestamp
+                    self._model_cache["anthropic"] = {
+                        "models": models,
+                        "last_updated": datetime.now(UTC).isoformat(),
+                        "total_count": len(models),
+                    }
+
+                    # Save to disk
+                    self._save_cache_to_disk()
+
+                    return models
+                return []
+        except Exception:
+            # Return from cache if available
+            if "anthropic" in self._model_cache:
+                return self._model_cache["anthropic"]["models"]
+            return []
 
     async def _query_gemini_models(self) -> list[str]:
         """Query Google Gemini API for available models.
@@ -451,6 +508,53 @@ class LLMGateway:
             # Return from cache if available
             if "gemini" in self._model_cache:
                 return self._model_cache["gemini"]["models"]
+            return []
+
+    async def _query_cerebras_models(self) -> list[str]:
+        """Query Cerebras API for available models.
+        
+        Returns all available models and caches results with timestamp.
+        Always updates timestamp even if models haven't changed.
+        """
+        from datetime import datetime
+
+        api_key = os.getenv("CEREBRAS_API_KEY")
+        if not api_key:
+            # Return from cache if available
+            if "cerebras" in self._model_cache:
+                return self._model_cache["cerebras"]["models"]
+            return []
+
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(
+                    "https://api.cerebras.ai/v1/models",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                if "data" in data:
+                    # Extract model IDs
+                    model_ids = [m["id"] for m in data["data"]]
+                    models = [f"cerebras/{m}" for m in sorted(model_ids, reverse=True)]
+
+                    # Always update cache with new timestamp
+                    self._model_cache["cerebras"] = {
+                        "models": models,
+                        "last_updated": datetime.now(UTC).isoformat(),
+                        "total_count": len(models),
+                    }
+
+                    # Save to disk
+                    self._save_cache_to_disk()
+
+                    return models
+                return []
+        except Exception:
+            # Return from cache if available
+            if "cerebras" in self._model_cache:
+                return self._model_cache["cerebras"]["models"]
             return []
 
     def get_cached_models(self) -> dict[str, Any]:
